@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Search, MoreHorizontal, ShieldAlert, Eye } from "lucide-react";
 import type { User } from "@/types";
+import { motion } from "framer-motion";
 
 export function Users() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,7 +35,12 @@ export function Users() {
   );
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-6 pb-12"
+    >
       <div className="flex flex-col gap-2">
         <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
         <p className="text-muted-foreground">Manage privileged identities and review risk profiles.</p>
@@ -139,6 +145,6 @@ export function Users() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
