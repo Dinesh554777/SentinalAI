@@ -4,13 +4,12 @@ import pandas as pd
 # Load trained model
 model = joblib.load("models/risk_model.pkl")
 
-# Risk labels
+# Risk label mapping
 risk_labels = {
     0: "Low",
     1: "Medium",
     2: "High"
 }
-
 
 def predict_risk(data: dict):
 
@@ -51,3 +50,29 @@ def predict_risk(data: dict):
         "risk_score": risk_scores[risk],
         "reasons": reasons
     }
+
+
+# ------------------------------
+# Test
+# ------------------------------
+if __name__ == "__main__":
+
+    print("🚀 Starting prediction...")
+
+    sample = {
+        "login_hour": 2,
+        "new_device": 1,
+        "new_location": 1,
+        "failed_logins": 5,
+        "files_downloaded": 3500,
+        "commands_executed": 45,
+        "session_duration": 200,
+        "weekend_login": 1
+    }
+
+    print("📋 Sample Input:", sample)
+
+    result = predict_risk(sample)
+
+    print("✅ Prediction Result:")
+    print(result)
