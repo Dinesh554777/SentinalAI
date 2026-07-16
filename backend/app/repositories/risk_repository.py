@@ -10,6 +10,9 @@ class RiskRepository:
     def get_by_id(self, risk_id: int) -> Risk | None:
         return self.db.query(Risk).filter(Risk.id == risk_id).first()
 
+    def list_all(self) -> list[Risk]:
+        return self.db.query(Risk).all()
+
     def create(self, risk: Risk) -> Risk:
         self.db.add(risk)
         self.db.commit()

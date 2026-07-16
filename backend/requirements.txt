@@ -4,3 +4,4 @@ pydantic==2.9.0
 python-dotenv==1.0.0
 SQLAlchemy==2.0.21
 pydantic-settings
+email-validator

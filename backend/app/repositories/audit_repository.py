@@ -10,6 +10,9 @@ class AuditRepository:
     def get_by_id(self, audit_id: int) -> Audit | None:
         return self.db.query(Audit).filter(Audit.id == audit_id).first()
 
+    def list_all(self) -> list[Audit]:
+        return self.db.query(Audit).all()
+
     def create(self, audit: Audit) -> Audit:
         self.db.add(audit)
         self.db.commit()

@@ -16,6 +16,12 @@ class UserRepository:
     def list_all(self) -> list[User]:
         return self.db.query(User).all()
 
+    def create(self, user: User) -> User:
+        self.db.add(user)
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+
     def update(self, user: User) -> User:
         self.db.add(user)
         self.db.commit()

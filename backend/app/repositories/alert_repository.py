@@ -10,6 +10,9 @@ class AlertRepository:
     def get_by_id(self, alert_id: int) -> Alert | None:
         return self.db.query(Alert).filter(Alert.id == alert_id).first()
 
+    def list_all(self) -> list[Alert]:
+        return self.db.query(Alert).all()
+
     def create(self, alert: Alert) -> Alert:
         self.db.add(alert)
         self.db.commit()

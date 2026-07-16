@@ -1,14 +1,16 @@
 from fastapi import Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.jwt import create_access_token, verify_access_token
 from app.core.password import verify_password
 from app.core.security import oauth2_scheme
+from app.api.deps import get_db
 from app.repositories.user_repository import UserRepository
 
 
-def authenticate_user(email: str, password: str) -> dict | None:
-    repo = UserRepository()
+def authenticate_user(db: Session, email: str, password: str) -> dict | None:
+    repo = UserRepository(db)
     user = repo.get_by_email(email)
     if not user or not verify_password(password, user.hashed_password):
         return None
@@ -24,7 +26,7 @@ def create_token_response(user: dict) -> dict:
     }
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> dict:
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -34,7 +36,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
 
     payload = verify_access_token(token)
     email = payload.get("sub")
-    repo = UserRepository()
+    repo = UserRepository(db)
     user = repo.get_by_email(email)
     if not user:
         raise HTTPException(

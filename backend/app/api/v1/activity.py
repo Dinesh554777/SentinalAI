@@ -16,6 +16,12 @@ def create_activity(payload: ActivityCreate, db: Session = Depends(get_db)):
     return created
 
 
+@router.get("/activities", response_model=list[ActivityOut], summary="List all activities")
+def list_activities(db: Session = Depends(get_db)):
+    service = ActivityService(db)
+    return service.list_activities()
+
+
 @router.get("/activities/{activity_id}", response_model=ActivityOut, summary="Get activity")
 def get_activity(activity_id: int, db: Session = Depends(get_db)):
     service = ActivityService(db)

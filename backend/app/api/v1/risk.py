@@ -16,6 +16,12 @@ def create_risk(payload: RiskCreate, db: Session = Depends(get_db)):
     return created
 
 
+@router.get("/risks", response_model=list[RiskOut], summary="List all risks")
+def list_risks(db: Session = Depends(get_db)):
+    service = RiskService(db)
+    return service.list()
+
+
 @router.get("/risks/{risk_id}", response_model=RiskOut, summary="Get risk")
 def get_risk(risk_id: int, db: Session = Depends(get_db)):
     service = RiskService(db)

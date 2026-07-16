@@ -16,6 +16,12 @@ def create_audit(payload: AuditCreate, db: Session = Depends(get_db)):
     return created
 
 
+@router.get("/audits", response_model=list[AuditOut], summary="List all audits")
+def list_audits(db: Session = Depends(get_db)):
+    service = AuditService(db)
+    return service.list()
+
+
 @router.get("/audits/{audit_id}", response_model=AuditOut, summary="Get audit")
 def get_audit(audit_id: int, db: Session = Depends(get_db)):
     service = AuditService(db)

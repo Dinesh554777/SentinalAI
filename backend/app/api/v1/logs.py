@@ -19,7 +19,7 @@ def create_log(payload: ActivityCreate, db: Session = Depends(get_db)):
 @router.get("/logs", response_model=list[ActivityOut], summary="List all activity logs")
 def list_logs(db: Session = Depends(get_db)):
     service = ActivityService(db)
-    return service.list()
+    return service.list_activities()
 
 
 @router.get("/logs/{user_id}", response_model=list[ActivityOut], summary="Get logs for a specific user")

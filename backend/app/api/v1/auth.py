@@ -13,8 +13,8 @@ router = APIRouter(tags=["Authentication"])
 
 
 @router.post("/login", response_model=Token, summary="Login with JSON credentials")
-def login(payload: LoginRequest):
-    user = authenticate_user(payload.username, payload.password)
+def login(payload: LoginRequest, db: Session = Depends(get_db)):
+    user = authenticate_user(db, payload.username, payload.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -25,8 +25,8 @@ def login(payload: LoginRequest):
 
 
 @router.post("/token", response_model=Token, summary="Obtain access token")
-def token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(form_data.username, form_data.password)
+def token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

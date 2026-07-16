@@ -6,10 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import api_router
 from app.core.config import settings
 from app.core.logging import setup_logging
+from app.db.base import init_db
 
 
 def create_app() -> FastAPI:
     setup_logging()
+    init_db()
     app = FastAPI(
         title=settings.project_name,
         version=settings.api_version,
