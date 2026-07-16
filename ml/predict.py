@@ -1,10 +1,10 @@
 import joblib
 import pandas as pd
 
-# Load the trained model
+# Load trained model
 model = joblib.load("models/risk_model.pkl")
 
-# Label Mapping
+# Risk labels
 risk_labels = {
     0: "Low",
     1: "Medium",
@@ -12,45 +12,42 @@ risk_labels = {
 }
 
 
-def predict_risk(
-    login_hour,
-    new_device,
-    new_location,
-    failed_logins,
-    files_downloaded,
-    commands_executed,
-    session_duration,
-    weekend_login
-):
-    # Create DataFrame
-    sample = pd.DataFrame([{
-        "login_hour": login_hour,
-        "new_device": new_device,
-        "new_location": new_location,
-        "failed_logins": failed_logins,
-        "files_downloaded": files_downloaded,
-        "commands_executed": commands_executed,
-        "session_duration": session_duration,
-        "weekend_login": weekend_login
-    }])
+def predict_risk(data: dict):
 
-    prediction = model.predict(sample)
+    df = pd.DataFrame([data])
 
-    return risk_labels[int(prediction[0])]
+    prediction = model.predict(df)
 
+    risk = risk_labels[int(prediction[0])]
 
-# Test
-if __name__ == "__main__":
+    risk_scores = {
+        "Low": 25,
+        "Medium": 60,
+        "High": 90
+    }
 
-    risk=predict_risk(
-    login_hour=3,
-    new_device=1,
-    new_location=0,
-    failed_logins=2,
-    files_downloaded=600,
-    commands_executed=15,
-    session_duration=90,
-    weekend_login=1
-)
+    reasons = []
 
-    print("Predicted Risk:", risk)
+    if data["new_device"]:
+        reasons.append("Login from a new device")
+
+    if data["new_location"]:
+        reasons.append("Login from a new location")
+
+    if data["failed_logins"] >= 3:
+        reasons.append("Multiple failed login attempts")
+
+    if data["files_downloaded"] > 1000:
+        reasons.append("Large number of downloaded files")
+
+    if data["login_hour"] < 5:
+        reasons.append("Login during unusual hours")
+
+    if data["weekend_login"]:
+        reasons.append("Weekend login detected")
+
+    return {
+        "risk": risk,
+        "risk_score": risk_scores[risk],
+        "reasons": reasons
+    }
