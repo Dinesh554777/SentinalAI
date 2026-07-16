@@ -1,23 +1,19 @@
 import joblib
 import pandas as pd
 
-# Load trained model
+# Load trained model and encoder
 model = joblib.load("models/risk_model.pkl")
+encoder = joblib.load("models/encoder.pkl")
 
-# Risk label mapping
-risk_labels = {
-    0: "Low",
-    1: "Medium",
-    2: "High"
-}
 
 def predict_risk(data: dict):
 
     df = pd.DataFrame([data])
+    df = df[model.feature_names_in_]
 
     prediction = model.predict(df)
 
-    risk = risk_labels[int(prediction[0])]
+    risk = encoder.inverse_transform(prediction)[0]
 
     risk_scores = {
         "Low": 25,

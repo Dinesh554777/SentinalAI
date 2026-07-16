@@ -65,10 +65,10 @@ htmlcov/
 # ==========================
 *.joblib
 
-# Ignore only generated model files if you don't want to version them
-# Uncomment these if models are generated during training:
-# ml/models/*.pkl
-# ml/*.pkl
+Ignore only generated model files if you don't want to version them
+Uncomment these if models are generated during training:
+ml/models/*.pkl
+ml/*.pkl
 
 # ==========================
 # Jupyter
