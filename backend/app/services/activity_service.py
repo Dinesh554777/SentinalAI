@@ -16,6 +16,9 @@ class ActivityService:
 
     def get(self, activity_id: int) -> ActivityModel | None:
         return self.repo.get_by_id(activity_id)
-class ActivityService:
-    def record_activity(self, user_id: int, action: str, description: str | None = None) -> dict:
-        return {"user_id": user_id, "action": action, "description": description}
+
+    def list(self) -> list[ActivityModel]:
+        return self.repo.list_all()
+
+    def list_by_user(self, user_id: int) -> list[ActivityModel]:
+        return self.repo.list_by_user(user_id)

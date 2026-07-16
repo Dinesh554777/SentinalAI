@@ -16,6 +16,12 @@ class AlertService:
 
     def get(self, alert_id: int) -> AlertModel | None:
         return self.repo.get_by_id(alert_id)
-class AlertService:
-    def create_alert(self, risk_id: int, status: str, severity: str, message: str | None = None) -> dict:
-        return {"risk_id": risk_id, "status": status, "severity": severity, "message": message}
+    def list(self) -> list[AlertModel]:
+        return self.repo.list_all()
+    def acknowledge(self, alert_id: int) -> AlertModel | None:
+        alert = self.repo.get_by_id(alert_id)
+        if alert:
+            alert.status = "acknowledged"
+            self.db.commit()
+            self.db.refresh(alert)
+        return alert

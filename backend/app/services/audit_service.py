@@ -16,12 +16,5 @@ class AuditService:
 
     def get(self, audit_id: int) -> AuditModel | None:
         return self.repo.get_by_id(audit_id)
-class AuditService:
-    def log_audit(self, entity: str, entity_id: int, action: str, user_id: int | None = None, details: str | None = None) -> dict:
-        return {
-            "entity": entity,
-            "entity_id": entity_id,
-            "action": action,
-            "user_id": user_id,
-            "details": details,
-        }
+    def list(self) -> list[AuditModel]:
+        return self.repo.list_all()
