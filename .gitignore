@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Trained Models
+ml/models/*.pkl
+
+# Generated Dataset
+ml/dataset/privileged_access_dataset.csv
+
+# Virtual Environment
+venv/
+.env
