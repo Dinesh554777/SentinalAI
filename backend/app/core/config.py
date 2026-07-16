@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     debug: bool = True
     allowed_hosts: list[str] = ["*"]
     cors_origins: list[str] = ["*"]
+    database_url: str = "sqlite:///./sentinelai.db"
+    secret_key: str = "change-me"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
 
     class Config:
         env_file = ".env"
