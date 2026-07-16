@@ -5,14 +5,13 @@ from typing import Dict, List, Tuple
 
 # Path resolution
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PROJECT_ROOT = os.path.dirname(BACKEND_DIR)
-MODEL_PATH = os.path.join(PROJECT_ROOT, "ml", "models", "risk_model.pkl")
-ENCODER_PATH = os.path.join(PROJECT_ROOT, "ml", "models", "encoder.pkl")
+MODEL_PATH = os.path.join(BACKEND_DIR, "ml", "models", "risk_model.pkl")
+ENCODER_PATH = os.path.join(BACKEND_DIR, "ml", "models", "encoder.pkl")
 
 # Load ML Model and Encoder globally on startup
 if not os.path.exists(MODEL_PATH) or not os.path.exists(ENCODER_PATH):
     raise FileNotFoundError(
-        f"Model files not found. Ensure they exist at {PROJECT_ROOT}/ml/models/"
+        f"Model files not found. Ensure they exist at {BACKEND_DIR}/ml/models/"
     )
 
 model = joblib.load(MODEL_PATH)
