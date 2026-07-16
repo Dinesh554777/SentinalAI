@@ -1,99 +1,80 @@
-import pandas as pd
 import joblib
-import os
+import pandas as pd
 
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.ensemble import IsolationForest
+# Load trained model
+model = joblib.load("models/risk_model.pkl")
 
-from xgboost import XGBClassifier
+# Risk label mapping
+risk_labels = {
+    0: "Low",
+    1: "Medium",
+    2: "High"
+}
 
-# -----------------------------
-# Load Dataset
-# -----------------------------
 
-df = pd.read_csv("dataset/privileged_access_dataset.csv")
+def predict_risk(data: dict):
+    """
+    Predict risk based on user activity.
+    """
 
-print("Dataset Loaded Successfully!")
-print(df.head())
+    df = pd.DataFrame([data])
 
-# -----------------------------
-# Encode Target Labels
-# -----------------------------
+    prediction = model.predict(df)
 
-encoder = LabelEncoder()
+    risk = risk_labels[int(prediction[0])]
 
-df["risk"] = encoder.fit_transform(df["risk"])
+    # Optional risk score
+    risk_scores = {
+        "Low": 25,
+        "Medium": 60,
+        "High": 90
+    }
 
-# -----------------------------
-# Split Features and Target
-# -----------------------------
+    # Explainable reasons
+    reasons = []
 
-X = df.drop("risk", axis=1)
+    if data["new_device"]:
+        reasons.append("Login from a new device")
 
-y = df["risk"]
+    if data["new_location"]:
+        reasons.append("Login from a new location")
 
-# -----------------------------
-# Train-Test Split
-# -----------------------------
+    if data["failed_logins"] >= 3:
+        reasons.append("Multiple failed login attempts")
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    random_state=42
-)
+    if data["files_downloaded"] > 1000:
+        reasons.append("Large number of downloaded files")
 
-# -----------------------------
-# Train Isolation Forest
-# -----------------------------
+    if data["login_hour"] < 5:
+        reasons.append("Login during unusual hours")
 
-anomaly_model = IsolationForest(
-    contamination=0.05,
-    random_state=42
-)
+    if data["weekend_login"]:
+        reasons.append("Weekend login detected")
 
-anomaly_model.fit(X_train)
+    return {
+        "risk": risk,
+        "risk_score": risk_scores[risk],
+        "reasons": reasons
+    }
 
-# -----------------------------
-# Train XGBoost
-# -----------------------------
 
-risk_model = XGBClassifier(
-    objective="multi:softmax",
-    num_class=3,
-    random_state=42
-)
+# ------------------------------
+# Test
+# ------------------------------
 
-risk_model.fit(X_train, y_train)
+if __name__ == "__main__":
 
-# -----------------------------
-# Predict
-# -----------------------------
+    sample = {
+        "login_hour": 2,
+        "new_device": 1,
+        "new_location": 1,
+        "failed_logins": 5,
+        "files_downloaded": 3500,
+        "commands_executed": 45,
+        "session_duration": 200,
+        "weekend_login": 1
+    }
 
-predictions = risk_model.predict(X_test)
+    result = predict_risk(sample)
 
-# -----------------------------
-# Accuracy
-# -----------------------------
-
-accuracy = accuracy_score(y_test, predictions)
-
-print("\nAccuracy:", accuracy)
-
-print("\nClassification Report:\n")
-
-print(classification_report(y_test, predictions))
-
-# -----------------------------
-# Save Models
-# -----------------------------
-
-os.makedirs("models", exist_ok=True)
-
-joblib.dump(anomaly_model, "models/anomaly_model.pkl")
-
-joblib.dump(risk_model, "models/risk_model.pkl")
-
-print("\nModels Saved Successfully!")
+    print(result)
