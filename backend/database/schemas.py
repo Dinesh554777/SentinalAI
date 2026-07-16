@@ -27,8 +27,7 @@ class UserResponse(BaseModel):
     name: str
     role: str
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 class UserDetailsResponse(BaseModel):
     id: int
@@ -36,8 +35,7 @@ class UserDetailsResponse(BaseModel):
     email: str
     role: str
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
@@ -72,8 +70,7 @@ class LogResponse(BaseModel):
     risk_score: Optional[int]
     timestamp: datetime.datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 # -----------------------------------------------
 # Predict Schema
@@ -112,5 +109,4 @@ class AlertResponse(BaseModel):
     time: str
     status: str
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}

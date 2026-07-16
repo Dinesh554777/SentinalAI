@@ -13,7 +13,7 @@ def store_log(payload: schemas.LogCreate, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    features = payload.dict()
+    features = payload.model_dump()
     risk, risk_score, reasons = prediction_service.predict_user_risk(features)
 
     new_log = models.ActivityLog(
@@ -50,5 +50,10 @@ def get_logs(db: Session = Depends(get_db)):
 
 
 @router.get("/{user_id}", response_model=List[schemas.LogResponse])
-def get_user_logs(user_id: int, db: Session = Depends(get_db)):
-    return db.query(models.ActivityLog).filter(models.ActivityLog.user_id == user_id).all()
+def get_user_logs(user_id: str, db: Session = Depends(get_db)):
+    # Support both numeric IDs and 'usr_X' formatted IDs from the frontend
+    try:
+        uid = int(user_id.replace("usr_", ""))
+    except (ValueError, AttributeError):
+        uid = 0
+    return db.query(models.ActivityLog).filter(models.ActivityLog.user_id == uid).all()

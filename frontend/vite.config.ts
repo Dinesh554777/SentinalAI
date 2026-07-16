@@ -10,4 +10,14 @@ export default defineConfig({
     },
     modules: [path.resolve(__dirname, "node_modules"), "node_modules"],
   },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 })

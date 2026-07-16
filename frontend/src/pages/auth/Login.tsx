@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { LogIn } from "lucide-react";
 import { toast } from "sonner";
+import { authApi } from "@/services/api";
 
 export function Login() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error("Please enter email and password");
@@ -21,27 +22,19 @@ export function Login() {
     }
     
     setIsLoading(true);
-    // Simulate API call and Risk Prediction
-    setTimeout(() => {
+    try {
+      const data = await authApi.login(email, password);
+      // Store the real JWT token
+      localStorage.setItem("sentinel_token", data.access_token);
+      localStorage.setItem("sentinel_role", data.role);
+      toast.success(`Welcome back! Logged in as ${data.role}`);
+      navigate("/dashboard");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { detail?: string } } };
+      toast.error(error?.response?.data?.detail || "Invalid username or password");
+    } finally {
       setIsLoading(false);
-      
-      const emailLower = email.toLowerCase();
-      
-      if (emailLower.includes("high")) {
-        // High Risk -> Access Denied
-        toast.error("Login blocked due to high-risk assessment.");
-        navigate("/access-denied");
-      } else if (emailLower.includes("medium")) {
-        // Medium Risk -> OTP Required
-        toast.warning("Verification required due to medium-risk assessment.");
-        navigate("/otp");
-      } else {
-        // Low Risk -> Direct Login
-        localStorage.setItem("sentinel_token", "mock_jwt_token_" + Date.now());
-        toast.success("Authentication successful.");
-        navigate("/dashboard");
-      }
-    }, 1000);
+    }
   };
 
   return (

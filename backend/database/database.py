@@ -1,7 +1,11 @@
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
+
+
+class Base(DeclarativeBase):
+    pass
+
 
 # Database path (SQLite file located in the backend folder)
 DATABASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -15,8 +19,6 @@ engine = create_engine(
 # Create sessionmaker
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Declarative base
-Base = declarative_base()
 
 # Dependency to get db session
 def get_db():
