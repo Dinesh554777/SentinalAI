@@ -12,6 +12,7 @@ import { RiskAnalysis } from "./pages/risk-analysis/RiskAnalysis";
 import { Alerts } from "./pages/alerts/Alerts";
 import { Users } from "./pages/users/Users";
 import { UserDetails } from "./pages/users/UserDetails";
+import { Reports } from "./pages/reports/Reports";
 import { Profile } from "./pages/profile/Profile";
 import { Settings } from "./pages/settings/Settings";
 
@@ -37,6 +38,7 @@ function App() {
             <Route path="/alerts" element={<Alerts />} />
             <Route path="/users" element={<Users />} />
             <Route path="/users/:id" element={<UserDetails />} />
+            <Route path="/reports" element={<Reports />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
           </Route>

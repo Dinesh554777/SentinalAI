@@ -84,12 +84,14 @@ export function Navbar() {
           </div>
           <div className="p-4 flex-1">
              <div className="text-sm font-medium mb-2 text-muted-foreground">Navigation</div>
-             <div className="grid gap-2">
-               <Link to="/dashboard" className="flex items-center gap-2 py-2"><span className="w-full">Dashboard</span></Link>
-               <Link to="/live-monitoring" className="flex items-center gap-2 py-2"><span className="w-full">Live Monitoring</span></Link>
-               <Link to="/risk-analysis" className="flex items-center gap-2 py-2"><span className="w-full">Risk Analysis</span></Link>
-               <Link to="/alerts" className="flex items-center gap-2 py-2"><span className="w-full">Alerts</span></Link>
-             </div>
+               <div className="grid gap-2">
+                 <Link to="/dashboard" className="flex items-center gap-2 py-2"><span className="w-full">Dashboard</span></Link>
+                 <Link to="/live-monitoring" className="flex items-center gap-2 py-2"><span className="w-full">Live Monitoring</span></Link>
+                 <Link to="/risk-analysis" className="flex items-center gap-2 py-2"><span className="w-full">Risk Analysis</span></Link>
+                 <Link to="/alerts" className="flex items-center gap-2 py-2"><span className="w-full">Alerts</span></Link>
+                 <Link to="/users" className="flex items-center gap-2 py-2"><span className="w-full">Users</span></Link>
+                 <Link to="/reports" className="flex items-center gap-2 py-2"><span className="w-full">Reports</span></Link>
+               </div>
           </div>
         </SheetContent>
       </Sheet>

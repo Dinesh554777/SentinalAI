@@ -5,6 +5,7 @@ import {
   ShieldAlert,
   BellRing,
   Users,
+  BarChart3,
   UserCircle,
   Settings,
   LogOut
@@ -19,6 +20,7 @@ const navItems = [
   { icon: ShieldAlert, label: "Risk Analysis", href: "/risk-analysis" },
   { icon: BellRing, label: "Alerts", href: "/alerts" },
   { icon: Users, label: "Users", href: "/users" },
+  { icon: BarChart3, label: "Reports", href: "/reports" },
 ];
 
 const bottomItems = [
