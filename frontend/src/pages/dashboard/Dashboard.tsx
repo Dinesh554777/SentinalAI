@@ -1,52 +1,22 @@
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/services/mockApi";
-import { dashboardService, securityHealthService, threatService } from "@/mock/services";
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShieldAlert } from "lucide-react";
-import { XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
-import type { Alert } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-
-// New Components
+import { useDashboardStats, useRecentAlerts, useRiskAnalysis, useEnterpriseMetrics, useSecurityHealth, useThreats } from "@/hooks/useApi";
 import { SecurityCommandCenter } from "@/components/dashboard/SecurityCommandCenter";
 import { SecurityHealthPanel } from "@/components/dashboard/SecurityHealthPanel";
 import { ThreatIntelligencePanel } from "@/components/dashboard/ThreatIntelligencePanel";
 import { EnterpriseMetrics } from "@/components/dashboard/EnterpriseMetrics";
 
 export function Dashboard() {
-  // Existing hooks
-  const { data: stats } = useQuery({
-    queryKey: ['dashboardStats'],
-    queryFn: api.getDashboard
-  });
-
-  const { data: alerts, isLoading: alertsLoading } = useQuery({
-    queryKey: ['recentAlerts'],
-    queryFn: api.getAlerts
-  });
-
-  const { data: riskAnalysis } = useQuery({
-    queryKey: ['riskAnalysis', 'usr_3'],
-    queryFn: () => api.getRiskAnalysis('usr_3')
-  });
-
-  // New Hooks for Enterprise Features
-  const { data: enterpriseMetrics } = useQuery({
-    queryKey: ['enterpriseMetrics'],
-    queryFn: dashboardService.getEnterpriseMetrics
-  });
-
-  const { data: securityHealth } = useQuery({
-    queryKey: ['securityHealth'],
-    queryFn: securityHealthService.getHealth
-  });
-
-  const { data: threats } = useQuery({
-    queryKey: ['threats'],
-    queryFn: threatService.getLatestThreats
-  });
+  const { data: stats } = useDashboardStats();
+  const { data: alerts, isLoading: alertsLoading } = useRecentAlerts();
+  const { data: riskAnalysis } = useRiskAnalysis("usr_3");
+  const { data: enterpriseMetrics } = useEnterpriseMetrics();
+  const { data: securityHealth } = useSecurityHealth();
+  const { data: threats } = useThreats();
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -58,10 +28,14 @@ export function Dashboard() {
     }
   };
 
-  const pieData = [
-    { name: 'Low Risk', value: 1200, color: '#22c55e' },
-    { name: 'Medium Risk', value: 238, color: '#eab308' },
-    { name: 'High Risk', value: 12, color: '#ef4444' },
+  const pieData = stats ? [
+    { name: 'Low Risk', value: stats.lowRisk || 0, color: '#22c55e' },
+    { name: 'Medium Risk', value: stats.mediumRisk || 0, color: '#eab308' },
+    { name: 'High Risk', value: stats.highRisk || 0, color: '#ef4444' },
+  ] : [
+    { name: 'Low Risk', value: 0, color: '#22c55e' },
+    { name: 'Medium Risk', value: 0, color: '#eab308' },
+    { name: 'High Risk', value: 0, color: '#ef4444' },
   ];
 
   return (
@@ -76,13 +50,10 @@ export function Dashboard() {
         <p className="text-muted-foreground">Monitor privileged access, detect anomalies, and track insider threats.</p>
       </div>
 
-      {/* Enterprise Top Banner */}
       {stats ? <SecurityCommandCenter stats={stats} /> : <Skeleton className="h-32 w-full" />}
 
-      {/* Enterprise Metrics Summary */}
       {enterpriseMetrics ? <EnterpriseMetrics metrics={enterpriseMetrics} /> : <Skeleton className="h-32 w-full" />}
 
-      {/* Health and Intelligence Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="col-span-4 h-full">
           {threats ? <ThreatIntelligencePanel threats={threats} /> : <Skeleton className="h-full w-full min-h-[300px]" />}
@@ -92,7 +63,6 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Charts Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4 backdrop-blur-md bg-background/60">
           <CardHeader>
@@ -137,7 +107,6 @@ export function Dashboard() {
         </Card>
       </div>
 
-      {/* Recent Alerts */}
       <Card className="backdrop-blur-md bg-background/60 border-destructive/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -151,7 +120,7 @@ export function Dashboard() {
             {alertsLoading ? (
               [1,2,3].map(i => <Skeleton key={i} className="h-16 w-full" />)
             ) : (
-              alerts?.map((alert: Alert, idx: number) => (
+              alerts?.map((alert, idx: number) => (
                 <motion.div 
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
