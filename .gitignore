@@ -80,3 +80,5 @@ ml/*.pkl
 # ==========================
 *.tmp
 *.swp
+backend/ml/models/*.pkl
+backend/ml/*.pkl.
