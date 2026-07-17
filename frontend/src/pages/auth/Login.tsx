@@ -20,18 +20,23 @@ export function Login() {
       toast.error("Please enter email and password");
       return;
     }
-    
+
     setIsLoading(true);
     try {
       const data = await authApi.login(email, password);
-      // Store the real JWT token
       localStorage.setItem("sentinel_token", data.access_token);
       localStorage.setItem("sentinel_role", data.role);
-      toast.success(`Welcome back! Logged in as ${data.role}`);
+      localStorage.setItem("sentinel_user_id", String(data.user_id));
+      localStorage.setItem("sentinel_user_name", data.name);
+      toast.success(`Welcome back, ${data.name}! Logged in as ${data.role}`);
       navigate("/dashboard");
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { detail?: string } } };
-      toast.error(error?.response?.data?.detail || "Invalid username or password");
+      const error = err as { response?: { data?: { detail?: string }; status?: number } };
+      if (error?.response?.status === 423) {
+        toast.error("Account is locked. Please try again later.");
+      } else {
+        toast.error(error?.response?.data?.detail || "Invalid username or password");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -42,10 +47,10 @@ export function Login() {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email Address</Label>
-          <Input 
-            id="email" 
-            type="email" 
-            placeholder="soc01@sentinel.bank" 
+          <Input
+            id="email"
+            type="email"
+            placeholder="admin@bank.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="bg-background/50"
@@ -56,17 +61,17 @@ export function Login() {
             <Label htmlFor="password">Password</Label>
             <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
           </div>
-          <Input 
-            id="password" 
-            type="password" 
-            placeholder="••••••••" 
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="bg-background/50"
           />
         </div>
       </div>
-      
+
       <div className="flex items-center space-x-2">
         <Checkbox id="remember" />
         <Label htmlFor="remember" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
@@ -87,6 +92,10 @@ export function Login() {
           </div>
         )}
       </Button>
+
+      <p className="text-center text-sm text-muted-foreground">
+        Default: <span className="font-mono">admin@bank.com</span> / <span className="font-mono">admin123</span>
+      </p>
     </form>
   );
 }

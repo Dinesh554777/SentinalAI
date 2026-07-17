@@ -4,11 +4,17 @@ from typing import List
 from database.database import get_db
 from database import models, schemas
 from services import prediction_service
+from api.auth_deps import get_current_user
 
 router = APIRouter(prefix="/logs", tags=["Logs"])
 
+
 @router.post("")
-def store_log(payload: schemas.LogCreate, db: Session = Depends(get_db)):
+def store_log(
+    payload: schemas.LogCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     user = db.query(models.User).filter(models.User.id == payload.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -24,10 +30,10 @@ def store_log(payload: schemas.LogCreate, db: Session = Depends(get_db)):
         failed_logins=payload.failed_logins,
         files_downloaded=payload.files_downloaded,
         commands_executed=payload.commands_executed,
-        session_duration=60,  # Default fallback
+        session_duration=60,
         weekend_login=payload.weekend,
         risk=risk,
-        risk_score=risk_score
+        risk_score=risk_score,
     )
     db.add(new_log)
     db.commit()
@@ -36,22 +42,25 @@ def store_log(payload: schemas.LogCreate, db: Session = Depends(get_db)):
         new_alert = models.Alert(
             user_id=payload.user_id,
             risk=risk,
-            status="Active"
+            status="Active",
         )
         db.add(new_alert)
         db.commit()
 
-    return {"message": "Log Stored"}
+    return {"message": "Log Stored", "risk": risk, "risk_score": risk_score}
 
 
 @router.get("", response_model=List[schemas.LogResponse])
-def get_logs(db: Session = Depends(get_db)):
+def get_logs(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     return db.query(models.ActivityLog).order_by(models.ActivityLog.timestamp.desc()).all()
 
 
 @router.get("/{user_id}", response_model=List[schemas.LogResponse])
-def get_user_logs(user_id: str, db: Session = Depends(get_db)):
-    # Support both numeric IDs and 'usr_X' formatted IDs from the frontend
+def get_user_logs(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     try:
         uid = int(user_id.replace("usr_", ""))
     except (ValueError, AttributeError):

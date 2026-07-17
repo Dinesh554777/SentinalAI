@@ -1,15 +1,17 @@
-import { Link, useLocation } from "react-router-dom";
-import { 
-  LayoutDashboard, 
-  Activity, 
-  ShieldAlert, 
-  BellRing, 
-  Users, 
-  UserCircle, 
-  Settings, 
-  LogOut 
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Activity,
+  ShieldAlert,
+  BellRing,
+  Users,
+  UserCircle,
+  Settings,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { authApi } from "@/services/api";
+import { toast } from "sonner";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -26,6 +28,21 @@ const bottomItems = [
 
 export function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // Logout even if API call fails
+    }
+    localStorage.removeItem("sentinel_token");
+    localStorage.removeItem("sentinel_role");
+    localStorage.removeItem("sentinel_user_id");
+    localStorage.removeItem("sentinel_user_name");
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
 
   const renderLink = (item: any) => {
     const isActive = location.pathname.startsWith(item.href);
@@ -35,8 +52,8 @@ export function Sidebar() {
         to={item.href}
         className={cn(
           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
-          isActive 
-            ? "bg-primary text-primary-foreground" 
+          isActive
+            ? "bg-primary text-primary-foreground"
             : "text-muted-foreground hover:bg-muted hover:text-foreground"
         )}
       >
@@ -62,13 +79,13 @@ export function Sidebar() {
       <div className="mt-auto p-4 border-t">
         <nav className="grid items-start gap-1 text-sm font-medium">
           {bottomItems.map(renderLink)}
-          <Link
-            to="/login"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-destructive transition-all hover:bg-destructive/10"
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-destructive transition-all hover:bg-destructive/10 cursor-pointer w-full text-left"
           >
             <LogOut className="h-4 w-4" />
             Logout
-          </Link>
+          </button>
         </nav>
       </div>
     </aside>

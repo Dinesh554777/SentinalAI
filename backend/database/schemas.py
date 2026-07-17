@@ -1,27 +1,29 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
 import datetime
 
-# -----------------------------------------------
-# Auth Schemas
-# -----------------------------------------------
+
 class UserLogin(BaseModel):
-    username: str  # maps to email in the DB
+    username: str
     password: str
+
 
 class TokenResponse(BaseModel):
     access_token: str
+    token_type: str = "bearer"
     role: str
+    user_id: int
+    name: str
+    expires_in: int
+
 
 class UserRegister(BaseModel):
-    name: str
-    email: str
-    password: str
-    role: str
+    name: str = Field(..., min_length=2, max_length=100)
+    email: str = Field(..., min_length=5)
+    password: str = Field(..., min_length=6)
+    role: str = "Standard"
 
-# -----------------------------------------------
-# User Schemas
-# -----------------------------------------------
+
 class UserResponse(BaseModel):
     id: int
     name: str
@@ -29,22 +31,35 @@ class UserResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
 class UserDetailsResponse(BaseModel):
     id: int
     name: str
     email: str
     role: str
+    is_active: int
+    last_login: Optional[datetime.datetime] = None
+    created_at: Optional[datetime.datetime] = None
 
     model_config = {"from_attributes": True}
+
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
     role: Optional[str] = None
 
-# -----------------------------------------------
-# Activity Log Schemas
-# -----------------------------------------------
+
+class SessionResponse(BaseModel):
+    id: int
+    ip_address: Optional[str]
+    user_agent: Optional[str]
+    created_at: datetime.datetime
+    expires_at: datetime.datetime
+
+    model_config = {"from_attributes": True}
+
+
 class LogCreate(BaseModel):
     user_id: int
     new_device: int = Field(..., ge=0, le=1)
@@ -53,7 +68,8 @@ class LogCreate(BaseModel):
     files_downloaded: int = Field(..., ge=0)
     commands_executed: int = Field(..., ge=0)
     login_hour: int = Field(..., ge=0, le=23)
-    weekend: int = Field(..., ge=0, le=1)  # API design requested "weekend" instead of weekend_login
+    weekend: int = Field(..., ge=0, le=1)
+
 
 class LogResponse(BaseModel):
     id: int
@@ -72,9 +88,7 @@ class LogResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
-# -----------------------------------------------
-# Predict Schema
-# -----------------------------------------------
+
 class PredictRequest(BaseModel):
     new_device: int = Field(..., ge=0, le=1)
     new_location: int = Field(..., ge=0, le=1)
@@ -84,24 +98,22 @@ class PredictRequest(BaseModel):
     login_hour: int = Field(..., ge=0, le=23)
     weekend: int = Field(..., ge=0, le=1)
 
+
 class PredictResponse(BaseModel):
     risk: str
     risk_score: int
     reasons: List[str]
 
-# -----------------------------------------------
-# Dashboard Schema
-# -----------------------------------------------
+
 class DashboardResponse(BaseModel):
     total_users: int
     total_logs: int
     high_risk: int
     medium_risk: int
     low_risk: int
+    active_sessions: int = 0
 
-# -----------------------------------------------
-# Alert Schemas
-# -----------------------------------------------
+
 class AlertResponse(BaseModel):
     id: int
     user: str

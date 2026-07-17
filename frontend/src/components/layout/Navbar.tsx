@@ -1,11 +1,12 @@
-import { Link, useLocation } from "react-router-dom";
-import { 
-  Bell, 
-  Search, 
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Bell,
+  Search,
   Menu,
   Moon,
   Sun,
-  ShieldAlert
+  ShieldAlert,
+  LogOut,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,12 +19,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
+import { authApi } from "@/services/api";
+import { toast } from "sonner";
 
 export function Navbar() {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const location = useLocation();
+  const navigate = useNavigate();
+  const userName = localStorage.getItem("sentinel_user_name") || "User";
+  const userRole = localStorage.getItem("sentinel_role") || "Standard";
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -39,6 +45,22 @@ export function Navbar() {
     const title = path.split('/')[0].split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     return title;
   };
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // Logout even if API call fails
+    }
+    localStorage.removeItem("sentinel_token");
+    localStorage.removeItem("sentinel_role");
+    localStorage.removeItem("sentinel_user_id");
+    localStorage.removeItem("sentinel_user_name");
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
+
+  const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-10">
@@ -60,7 +82,6 @@ export function Navbar() {
               <span className="text-lg">SentinelAI</span>
             </Link>
           </div>
-          {/* We would render Sidebar navItems here for mobile, but keeping it simple */}
           <div className="p-4 flex-1">
              <div className="text-sm font-medium mb-2 text-muted-foreground">Navigation</div>
              <div className="grid gap-2">
@@ -88,12 +109,12 @@ export function Navbar() {
           </div>
         </form>
       </div>
-      
+
       <Button variant="ghost" size="icon" onClick={toggleTheme}>
         {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         <span className="sr-only">Toggle theme</span>
       </Button>
-      
+
       <Button variant="ghost" size="icon" className="relative">
         <Bell className="h-5 w-5" />
         <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
@@ -107,23 +128,25 @@ export function Navbar() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="https://i.pravatar.cc/150?u=soc01" alt="@soc01" />
-              <AvatarFallback>SA</AvatarFallback>
+              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">SOC Analyst</p>
-              <p className="text-xs leading-none text-muted-foreground">soc01@sentinel.bank</p>
+              <p className="text-sm font-medium leading-none">{userName}</p>
+              <p className="text-xs leading-none text-muted-foreground">{userRole}</p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild><Link to="/profile">Profile</Link></DropdownMenuItem>
           <DropdownMenuItem asChild><Link to="/settings">Settings</Link></DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild><Link to="/login" className="text-destructive">Log out</Link></DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
+            <LogOut className="h-4 w-4 mr-2" />
+            Log out
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
