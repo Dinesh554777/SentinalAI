@@ -22,12 +22,14 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def create_access_token(subject: Union[str, Any], role: str, expires_delta: int = None) -> str:
+def create_access_token(subject: Union[str, Any], role: str, jti: str = None, expires_delta: int = None) -> str:
     if expires_delta:
         expire = datetime.utcnow() + timedelta(minutes=expires_delta)
     else:
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = {"exp": expire, "sub": str(subject), "role": role, "iat": datetime.utcnow().timestamp()}
+    if jti:
+        to_encode["jti"] = jti
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 

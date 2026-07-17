@@ -112,7 +112,7 @@ def login(payload: schemas.UserLogin, request: Request, db: Session = Depends(ge
 
     jti, expires = _create_session(db, user, request)
 
-    token = security.create_access_token(subject=user.email, role=user.role)
+    token = security.create_access_token(subject=user.email, role=user.role, jti=jti)
 
     user.last_login = datetime.datetime.utcnow()
     db.commit()
@@ -157,11 +157,22 @@ def register(payload: schemas.UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/logout")
-def logout(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    db.query(models.UserSession).filter(
-        models.UserSession.user_id == current_user.id,
-        models.UserSession.is_revoked == 0,
-    ).update({"is_revoked": 1})
+def logout(request: Request, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    auth_header = request.headers.get("authorization", "")
+    token = auth_header.replace("Bearer ", "")
+    payload = security.decode_access_token(token)
+    jti = payload.get("jti") if payload else None
+
+    if jti:
+        db.query(models.UserSession).filter(
+            models.UserSession.token_jti == jti,
+            models.UserSession.user_id == current_user.id,
+        ).update({"is_revoked": 1})
+    else:
+        db.query(models.UserSession).filter(
+            models.UserSession.user_id == current_user.id,
+            models.UserSession.is_revoked == 0,
+        ).update({"is_revoked": 1})
     db.commit()
     return {"message": "Logged out successfully"}
 
