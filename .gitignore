@@ -82,3 +82,6 @@ backend/ml/*.pkl
 *.swp
 backend/backend/ml/models/*.pkl
 backend/backend/ml/*.pkl.
+priveiledge_escalation_detection.py
+ml_pipeline.py
+ml_model_training.py
