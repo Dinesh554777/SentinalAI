@@ -73,6 +73,9 @@ export interface DashboardStats {
   totalUsers: number;
   activeSessions: number;
   highRiskUsers: number;
+  mediumRiskUsers?: number;
+  lowRiskUsers?: number;
+  totalLogs?: number;
   todaysAlerts: number;
   protectedServers?: number;
   protectedEndpoints?: number;

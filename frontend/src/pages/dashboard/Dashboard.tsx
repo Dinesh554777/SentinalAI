@@ -29,9 +29,9 @@ export function Dashboard() {
   };
 
   const pieData = stats ? [
-    { name: 'Low Risk', value: stats.lowRisk || 0, color: '#22c55e' },
-    { name: 'Medium Risk', value: stats.mediumRisk || 0, color: '#eab308' },
-    { name: 'High Risk', value: stats.highRisk || 0, color: '#ef4444' },
+    { name: 'Low Risk', value: stats.lowRiskUsers || 0, color: '#22c55e' },
+    { name: 'Medium Risk', value: stats.mediumRiskUsers || 0, color: '#eab308' },
+    { name: 'High Risk', value: stats.highRiskUsers || 0, color: '#ef4444' },
   ] : [
     { name: 'Low Risk', value: 0, color: '#22c55e' },
     { name: 'Medium Risk', value: 0, color: '#eab308' },

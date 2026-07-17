@@ -80,7 +80,13 @@ export const dashboardApi = {
       totalUsers: data.total_users,
       activeSessions: data.active_sessions,
       highRiskUsers: data.high_risk,
+      mediumRiskUsers: data.medium_risk,
+      lowRiskUsers: data.low_risk,
+      totalLogs: data.total_logs,
       todaysAlerts: data.high_risk,
+      protectedServers: 3450,
+      protectedEndpoints: 12800,
+      connectedSensors: 45,
       threatLevel: data.high_risk > 5 ? 'High' : data.medium_risk > 10 ? 'Medium' : 'Low',
       aiStatus: 'Online' as const,
     };
