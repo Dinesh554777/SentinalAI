@@ -1,6 +1,6 @@
 # SentinelAI: Backend Integration Guide
 
-This guide describes how to integrate the trained Machine Learning models from the `ml/` directory into a Python-based backend (e.g., **FastAPI**).
+This guide describes how to integrate the trained Machine Learning models from the `backend/ml/` directory into a Python-based backend (e.g., **FastAPI**).
 
 ---
 

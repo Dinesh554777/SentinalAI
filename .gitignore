@@ -67,8 +67,8 @@ htmlcov/
 
 Ignore only generated model files if you don't want to version them
 Uncomment these if models are generated during training:
-ml/models/*.pkl
-ml/*.pkl
+backend/ml/models/*.pkl
+backend/ml/*.pkl
 
 # ==========================
 # Jupyter
@@ -80,5 +80,5 @@ ml/*.pkl
 # ==========================
 *.tmp
 *.swp
-backend/ml/models/*.pkl
-backend/ml/*.pkl.
+backend/backend/ml/models/*.pkl
+backend/backend/ml/*.pkl.
