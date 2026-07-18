@@ -64,11 +64,18 @@ htmlcov/
 # ML (Generated Files)
 # ==========================
 *.joblib
+*.pkl
 
-Ignore only generated model files if you don't want to version them
-Uncomment these if models are generated during training:
-backend/ml/models/*.pkl
-backend/ml/*.pkl
+# ==========================
+# Redis
+# ==========================
+dump.rdb
+
+# ==========================
+# Postman
+# ==========================
+.postman/
+postman/
 
 # ==========================
 # Jupyter
@@ -80,8 +87,3 @@ backend/ml/*.pkl
 # ==========================
 *.tmp
 *.swp
-backend/backend/ml/models/*.pkl
-backend/backend/ml/*.pkl.
-priveiledge_escalation_detection.py
-ml_pipeline.py
-ml_model_training.py
