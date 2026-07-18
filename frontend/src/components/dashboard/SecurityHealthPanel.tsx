@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { SecurityHealth } from "@/types";
-import { ShieldCheck, Activity, Users, Lock, ShieldAlert, TrendingUp } from "lucide-react";
+import { ShieldCheck, Activity, Users, Lock, ShieldAlert } from "lucide-react";
 import { ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { motion } from "framer-motion";
 

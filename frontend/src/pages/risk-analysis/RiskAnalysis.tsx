@@ -6,7 +6,7 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, RadarChart
 import { motion } from "framer-motion";
 import { AIExplainabilityPanel } from "@/components/dashboard/AIExplainabilityPanel";
 import { AttackTimeline } from "@/components/shared/AttackTimeline";
-import { Activity, BrainCircuit, Radar as RadarIcon } from "lucide-react";
+import { Activity, Radar as RadarIcon } from "lucide-react";
 
 export function RiskAnalysis() {
   const { data: analysis, isLoading: analysisLoading } = useQuery({

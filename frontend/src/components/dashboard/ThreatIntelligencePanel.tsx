@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShieldAlert, Crosshair, Clock, Globe, ExternalLink } from "lucide-react";
+import { ShieldAlert, Crosshair, Clock, Globe } from "lucide-react";
 import type { ThreatIntelligence } from "@/types";
 import { motion } from "framer-motion";
 
