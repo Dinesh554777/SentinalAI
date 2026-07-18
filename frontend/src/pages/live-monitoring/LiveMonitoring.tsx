@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Search, RefreshCcw, ShieldAlert, Wifi, WifiOff, Pause, Play } from "lucide-react";
 import type { Activity } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";

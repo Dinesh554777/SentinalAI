@@ -52,6 +52,7 @@ export function Signup() {
           role,
           expires_in: data.expires_in,
           otp_dev_hint: data.otp_dev_hint,
+          email_sent: data.email_sent,
         },
       });
     } catch (err: unknown) {

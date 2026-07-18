@@ -14,6 +14,7 @@ interface OTPState {
   role?: string;
   expires_in?: number;
   otp_dev_hint?: string;
+  email_sent?: boolean;
 }
 
 export function OTP() {
@@ -27,6 +28,7 @@ export function OTP() {
   const password = state.password || "";
   const role = state.role || "Standard";
   const otpDevHint = state.otp_dev_hint || "";
+  const emailSent = state.email_sent || false;
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timeLeft, setTimeLeft] = useState(state.expires_in || 120);
@@ -148,7 +150,11 @@ export function OTP() {
     try {
       const data = await authApi.sendOtp(email, purpose);
       setTimeLeft(data.expires_in || 120);
-      toast.success(`New OTP sent to ${email}`);
+      if (data.email_sent) {
+        toast.success(`OTP sent to ${email}`);
+      } else {
+        toast.info(`OTP resent — check dev hint below`);
+      }
       setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } catch (err: unknown) {
@@ -198,18 +204,37 @@ export function OTP() {
         <p className="text-sm font-medium text-foreground mt-0.5">{email}</p>
       </motion.div>
 
-      {otpDevHint && (
+      {/* Email Sent Indicator */}
+      {emailSent && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-auto max-w-sm flex items-center gap-2.5 p-3 rounded-xl bg-green-500/5 border border-green-500/15"
+        >
+          <div className="p-1.5 bg-green-500/10 rounded-lg">
+            <Mail className="w-4 h-4 text-green-500" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-green-600 dark:text-green-400">Email sent successfully</p>
+            <p className="text-[11px] text-muted-foreground truncate">Check your inbox for the 6-digit code</p>
+          </div>
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+          </div>
+        </motion.div>
+      )}
+
+      {/* Dev Hint (only when email not configured) */}
+      {otpDevHint && !emailSent && (
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
           className="mx-auto max-w-sm"
         >
           <div className="relative overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/5 via-background to-blue-500/5 shadow-lg shadow-primary/5">
-            {/* Top accent bar */}
             <div className="h-0.5 bg-gradient-to-r from-primary via-blue-500 to-primary" />
 
             <div className="p-4 space-y-3">
-              {/* Header */}
               <div className="flex items-center gap-2.5">
                 <div className="relative">
                   <div className="absolute inset-0 bg-primary/20 rounded-lg blur-md" />
@@ -221,13 +246,11 @@ export function OTP() {
                   <p className="text-xs font-semibold text-foreground">OTP Sent Successfully</p>
                   <p className="text-[11px] text-muted-foreground truncate">{email}</p>
                 </div>
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-[10px] font-medium text-green-600 dark:text-green-400">Delivered</span>
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                  <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">Dev Mode</span>
                 </div>
               </div>
 
-              {/* OTP Display */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5">
                   {otpDevHint.split("").map((digit, i) => (
@@ -263,13 +286,12 @@ export function OTP() {
                 </div>
               </div>
 
-              {/* Footer */}
               <div className="flex items-center justify-between pt-1 border-t border-muted-foreground/5">
                 <p className="text-[10px] text-muted-foreground">
                   Code expires in <span className="font-mono font-semibold text-foreground">{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}</span>
                 </p>
                 <p className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-wider">
-                  Dev Mode
+                  Configure SMTP in .env to send emails
                 </p>
               </div>
             </div>

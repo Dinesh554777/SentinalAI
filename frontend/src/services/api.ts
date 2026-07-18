@@ -286,4 +286,33 @@ export const reportsApi = {
   },
 };
 
+export const notificationsApi = {
+  getNotifications: async (limit: number = 50, unreadOnly: boolean = false) => {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (unreadOnly) params.set('unread_only', 'true');
+    const response = await apiClient.get(`/notifications?${params.toString()}`);
+    return response.data;
+  },
+
+  getUnreadCount: async () => {
+    const response = await apiClient.get('/notifications/unread-count');
+    return response.data.count;
+  },
+
+  markRead: async (id: number) => {
+    const response = await apiClient.put(`/notifications/${id}/read`);
+    return response.data;
+  },
+
+  markAllRead: async () => {
+    const response = await apiClient.put('/notifications/read-all');
+    return response.data;
+  },
+
+  deleteNotification: async (id: number) => {
+    const response = await apiClient.delete(`/notifications/${id}`);
+    return response.data;
+  },
+};
+
 export default apiClient;
