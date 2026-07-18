@@ -196,17 +196,36 @@ Users:           GET /users → each user's latest log → predict-risk → real
 ## Running Locally
 
 ```bash
-# Backend (terminal 1)
+# Backend (terminal 1) — HTTPS on port 8443
 cd backend
-python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8443 --ssl-keyfile certs/key.pem --ssl-certfile certs/cert.pem
 
-# Frontend (terminal 2)
+# Frontend (terminal 2) — HTTPS on port 5173
 cd frontend
-npm run dev   # → http://localhost:5173
+npm run dev   # → https://localhost:5173
 
 # Redis (terminal 3) — only if OTP email needed
 C:\Users\hp\Downloads\redis-server\redis-server.exe
 ```
+
+> Browser will show a "Not Secure" warning for self-signed certs. Click Advanced → Proceed to localhost.
+
+---
+
+## TLS / HTTPS
+
+Both frontend and backend serve over **HTTPS** with self-signed certificates.
+
+| Component  | URL                          | Cert Location          |
+|------------|------------------------------|------------------------|
+| Backend    | `https://127.0.0.1:8443`     | `backend/certs/`       |
+| Frontend   | `https://localhost:5173`      | `frontend/certs/`      |
+
+- Certs are auto-generated on first run if missing (Python `cryptography` library)
+- Valid for 365 days, covers `localhost` and `127.0.0.1`
+- Vite proxies `/api` → `https://127.0.0.1:8443` with `secure: false` (self-signed)
+- All data in transit is encrypted (JWT tokens, OTP codes, ML predictions, user data)
+- `backend/certs/` and `frontend/certs/` are in `.gitignore` — never committed
 
 ---
 
