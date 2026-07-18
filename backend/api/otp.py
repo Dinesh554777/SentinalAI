@@ -5,8 +5,9 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from database.database import get_db
 from database import models, schemas
-from utils.redis_client import store_otp, get_otp, delete_otp, redis_client, OTP_TTL_SECONDS
+from utils.redis_client import store_otp, get_otp, delete_otp, OTP_TTL_SECONDS
 from utils import security
+from services.email_service import send_otp_email, is_configured as email_configured
 import datetime
 
 router = APIRouter(prefix="/auth", tags=["OTP Verification"])
@@ -34,10 +35,15 @@ def _generate_otp(length: int = 6) -> str:
     return "".join(random.choices(string.digits, k=length))
 
 
-def _get_remaining_seconds(email: str) -> int:
-    key = f"otp:{email}"
-    ttl = redis_client.ttl(key)
-    return max(ttl, 0)
+def _create_notification(db: Session, title: str, message: str, notif_type: str = "info", user_id: int = None):
+    notif = models.Notification(
+        user_id=user_id,
+        title=title,
+        message=message,
+        type=notif_type,
+    )
+    db.add(notif)
+    db.commit()
 
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
@@ -59,14 +65,20 @@ def signup(payload: SignupWithOTPRequest, db: Session = Depends(get_db)):
     otp = _generate_otp()
     store_otp(payload.email, otp)
 
-    print(f"[OTP] Sent OTP {otp} to {payload.email} (purpose=signup, TTL={OTP_TTL_SECONDS}s)")
+    email_sent = send_otp_email(payload.email, otp, "signup")
 
-    return {
+    response = {
         "message": f"OTP sent to {payload.email}",
         "email": payload.email,
         "expires_in": OTP_TTL_SECONDS,
-        "otp_dev_hint": otp,
+        "email_sent": email_sent,
     }
+
+    if not email_sent:
+        response["otp_dev_hint"] = otp
+        print(f"[OTP] Dev hint for {payload.email}: {otp}")
+
+    return response
 
 
 @router.post("/send-otp")
@@ -89,13 +101,19 @@ def send_otp(payload: SendOTPRequest, db: Session = Depends(get_db)):
     otp = _generate_otp()
     store_otp(payload.email, otp)
 
-    print(f"[OTP] Sent OTP {otp} to {payload.email} (purpose={payload.purpose}, TTL={OTP_TTL_SECONDS}s)")
+    email_sent = send_otp_email(payload.email, otp, payload.purpose)
 
-    return {
+    response = {
         "message": f"OTP sent to {payload.email}",
         "expires_in": OTP_TTL_SECONDS,
-        "otp_dev_hint": otp,
+        "email_sent": email_sent,
     }
+
+    if not email_sent:
+        response["otp_dev_hint"] = otp
+        print(f"[OTP] Dev hint for {payload.email}: {otp}")
+
+    return response
 
 
 @router.post("/verify-otp")
@@ -156,6 +174,14 @@ def complete_signup(payload: SignupWithOTPRequest, db: Session = Depends(get_db)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    _create_notification(
+        db,
+        title="New Account Created",
+        message=f"Welcome to SentinelAI, {new_user.name}! Your account has been created with {new_user.role} access.",
+        notif_type="success",
+        user_id=new_user.id,
+    )
 
     jti, expires = _create_session_for_otp(db, new_user)
     token = security.create_access_token(subject=new_user.email, role=new_user.role, jti=jti)

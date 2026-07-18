@@ -72,3 +72,15 @@ class Alert(Base):
     status = Column(String, default="Active")
 
     user = relationship("User", back_populates="alerts")
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    title = Column(String, nullable=False)
+    message = Column(String, nullable=False)
+    type = Column(String, default="info")
+    is_read = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)

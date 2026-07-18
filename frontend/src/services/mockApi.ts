@@ -24,6 +24,7 @@ export const api = {
   getUser: usersApi.getUserById,
   getAlerts: alertsApi.getAlerts,
   getActivities: logsApi.getLogs,
+  getRecentLogs: logsApi.getRecentLogs,
   getRiskAnalysis: async (userId: string) => {
     const logs = await logsApi.getUserLogs(userId);
     const latest = logs[0];

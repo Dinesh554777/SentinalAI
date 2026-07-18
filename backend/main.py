@@ -1,4 +1,5 @@
 import datetime
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -8,8 +9,9 @@ from database.database import engine, Base, SessionLocal
 from database import models
 from utils import security
 from services import prediction_service
+from services.log_generator import background_log_generator
 
-from api import auth, users, logs, predict, dashboard, alerts, reports, otp
+from api import auth, users, logs, predict, dashboard, alerts, reports, otp, notifications
 
 
 def cleanup_expired_sessions():
@@ -107,11 +109,15 @@ async def lifespan(app: FastAPI):
 
     seed_default_data()
     cleanup_expired_sessions()
+
+    log_task = asyncio.create_task(background_log_generator())
+    print("[Startup] Background log generator started")
     print("[Startup] SentinelAI API is ready")
 
     yield
 
     print("[Shutdown] Cleaning up...")
+    log_task.cancel()
     engine.dispose()
 
 
@@ -138,6 +144,7 @@ app.include_router(dashboard.router)
 app.include_router(alerts.router)
 app.include_router(reports.router)
 app.include_router(otp.router)
+app.include_router(notifications.router)
 
 
 @app.get("/feature-importance", tags=["System"])

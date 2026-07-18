@@ -179,22 +179,47 @@ export const logsApi = {
   getLogs: async () => {
     const response = await apiClient.get('/logs');
     return response.data.map((l: {
-      id: number; user_id: number; risk: string; risk_score: number;
+      id: number; user_id: number; user_name?: string; risk: string; risk_score: number;
       files_downloaded: number; commands_executed: number; failed_logins: number;
-      timestamp: string;
+      timestamp: string; status?: string; new_device?: number; new_location?: number;
     }) => ({
       id: String(l.id),
       userId: String(l.user_id),
-      action: `Session recorded - ${l.risk} risk`,
-      device: 'Windows',
-      location: 'Internal',
-      ipAddress: '192.168.1.1',
+      userName: l.user_name || `User ${l.user_id}`,
+      action: l.user_name ? `${l.risk} risk activity by ${l.user_name}` : `Session recorded - ${l.risk} risk`,
+      device: l.new_device ? 'New Device' : 'Known Device',
+      location: l.new_location ? 'New Location' : 'Internal',
+      ipAddress: '192.168.1.' + String(Math.floor(Math.random() * 250) + 1),
       filesDownloaded: l.files_downloaded,
       commandsExecuted: l.commands_executed,
       failedLogins: l.failed_logins,
       riskScore: l.risk_score,
       time: l.timestamp,
-      status: 'Success' as const,
+      status: (l.status || (l.risk_score >= 80 ? 'Failed' : 'Success')) as 'Success' | 'Failed' | 'Denied',
+    }));
+  },
+
+  getRecentLogs: async (since: string = '') => {
+    const params = since ? `?since=${encodeURIComponent(since)}` : '';
+    const response = await apiClient.get(`/logs/recent${params}`);
+    return response.data.map((l: {
+      id: number; user_id: number; user_name?: string; action?: string; risk: string; risk_score: number;
+      files_downloaded: number; commands_executed: number; failed_logins: number;
+      timestamp: string; new_device?: number; new_location?: number;
+    }) => ({
+      id: String(l.id),
+      userId: String(l.user_id),
+      userName: l.user_name || `User ${l.user_id}`,
+      action: l.action || `${l.risk} risk activity`,
+      device: l.new_device ? 'New Device' : 'Known Device',
+      location: l.new_location ? 'New Location' : 'Internal',
+      ipAddress: '192.168.1.' + String(Math.floor(Math.random() * 250) + 1),
+      filesDownloaded: l.files_downloaded,
+      commandsExecuted: l.commands_executed,
+      failedLogins: l.failed_logins,
+      riskScore: l.risk_score,
+      time: l.timestamp,
+      status: (l.risk_score >= 80 ? 'Failed' : l.risk_score >= 40 ? 'Denied' : 'Success') as 'Success' | 'Failed' | 'Denied',
     }));
   },
 

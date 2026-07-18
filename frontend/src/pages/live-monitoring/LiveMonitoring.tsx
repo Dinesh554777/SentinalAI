@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { api } from "@/services/mockApi";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, RefreshCcw, UserMinus, ShieldAlert, Wifi } from "lucide-react";
+import { Search, RefreshCcw, ShieldAlert, Wifi, WifiOff, Pause, Play } from "lucide-react";
 import type { Activity } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { LiveActivityFeed } from "@/components/shared/LiveActivityFeed";
@@ -17,31 +16,86 @@ export function LiveMonitoring() {
   const [searchTerm, setSearchTerm] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");
   const [liveStream, setLiveStream] = useState<Activity[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [eventCount, setEventCount] = useState(0);
+  const lastTimestampRef = useRef<string>("");
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const { data: activities, isLoading, refetch } = useQuery({
-    queryKey: ['activities'],
-    queryFn: api.getActivities
-  });
+  const fetchRecent = useCallback(async (since: string = "") => {
+    try {
+      const recent = await api.getRecentLogs(since);
+      if (recent && recent.length > 0) {
+        setLiveStream(prev => {
+          const existingIds = new Set(prev.map(a => a.id));
+          const newItems = recent.filter((a: Activity) => !existingIds.has(a.id));
+          if (newItems.length === 0) return prev;
+          const combined = [...newItems, ...prev].slice(0, 200);
+          return combined;
+        });
+        if (recent[0]?.time) {
+          lastTimestampRef.current = recent[0].time;
+        }
+        setEventCount(prev => prev + recent.length);
+      }
+      setIsConnected(true);
+    } catch {
+      setIsConnected(false);
+    }
+  }, []);
+
+  const fetchAll = useCallback(async () => {
+    try {
+      const all = await api.getActivities();
+      setLiveStream(all);
+      setEventCount(all.length);
+      if (all[0]?.time) {
+        lastTimestampRef.current = all[0].time;
+      }
+      setIsConnected(true);
+    } catch {
+      setIsConnected(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (activities) {
-      setLiveStream(activities);
+    fetchAll();
+  }, [fetchAll]);
+
+  useEffect(() => {
+    if (isPaused) {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      return;
     }
-  }, [activities]);
+
+    pollIntervalRef.current = setInterval(() => {
+      if (lastTimestampRef.current) {
+        fetchRecent(lastTimestampRef.current);
+      } else {
+        fetchRecent();
+      }
+    }, 3000);
+
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    };
+  }, [isPaused, fetchRecent]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Success': return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'Failed': return 'bg-red-500/10 text-red-500 border-red-500/20';
-      case 'Denied': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-      default: return 'bg-muted';
+      case "Success": return "bg-green-500/10 text-green-500 border-green-500/20";
+      case "Failed": return "bg-red-500/10 text-red-500 border-red-500/20";
+      case "Denied": return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+      default: return "bg-muted";
     }
   };
 
-  const filteredActivities = liveStream.filter(a => {
-    const matchesSearch = a.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          a.ipAddress.includes(searchTerm) ||
-                          a.userId.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredActivities = liveStream.filter((a) => {
+    const matchesSearch =
+      a.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      a.ipAddress.includes(searchTerm) ||
+      a.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (a as Activity & { userName?: string }).userName?.toLowerCase().includes(searchTerm.toLowerCase());
 
     let matchesRisk = true;
     if (riskFilter === "high") matchesRisk = a.riskScore >= 80;
@@ -73,15 +127,43 @@ export function LiveMonitoring() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
-        className="flex items-center gap-2 text-xs text-muted-foreground bg-green-500/5 border border-green-500/10 rounded-full px-3 py-1.5 w-fit"
+        className="flex items-center gap-3 text-xs text-muted-foreground"
       >
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-        </span>
-        <Wifi className="w-3 h-3 text-green-500" />
-        <span>Connected to live stream</span>
+        <div className={`flex items-center gap-2 rounded-full px-3 py-1.5 w-fit ${
+          isConnected
+            ? "bg-green-500/5 border border-green-500/10"
+            : "bg-red-500/5 border border-red-500/10"
+        }`}>
+          {isConnected ? (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+              </span>
+              <Wifi className="w-3 h-3 text-green-500" />
+              <span>Live — polling every 3s</span>
+            </>
+          ) : (
+            <>
+              <WifiOff className="w-3 h-3 text-red-500" />
+              <span className="text-red-500">Disconnected</span>
+            </>
+          )}
+        </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsPaused(!isPaused)}
+          className="h-7 px-2.5 text-xs border-muted-foreground/15"
+        >
+          {isPaused ? <Play className="w-3 h-3 mr-1" /> : <Pause className="w-3 h-3 mr-1" />}
+          {isPaused ? "Resume" : "Pause"}
+        </Button>
+
         <span className="text-green-500 font-medium">{filteredActivities.length} events</span>
+        <span className="text-muted-foreground/50">|</span>
+        <span className="text-muted-foreground font-mono">{eventCount} total generated</span>
       </motion.div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -110,9 +192,9 @@ export function LiveMonitoring() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button variant="outline" size="sm" onClick={() => refetch()} className="w-full md:w-auto h-9 border-muted-foreground/15 hover:bg-muted/50">
+              <Button variant="outline" size="sm" onClick={() => fetchAll()} className="w-full md:w-auto h-9 border-muted-foreground/15 hover:bg-muted/50">
                 <RefreshCcw className="h-4 w-4 mr-2" />
-                Live Sync
+                Refresh
               </Button>
             </CardHeader>
             <CardContent className="p-0">
@@ -126,36 +208,37 @@ export function LiveMonitoring() {
                       <TableHead className="text-[11px] uppercase tracking-wider">Context</TableHead>
                       <TableHead className="text-right text-[11px] uppercase tracking-wider">Risk</TableHead>
                       <TableHead className="text-[11px] uppercase tracking-wider">Status</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     <AnimatePresence>
-                      {isLoading ? (
-                        Array(5).fill(0).map((_, i) => (
-                          <TableRow key={`skeleton-${i}`}>
-                            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-10 ml-auto" /></TableCell>
-                            <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
-                            <TableCell></TableCell>
-                          </TableRow>
-                        ))
-                      ) : filteredActivities?.length ? (
+                      {filteredActivities.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                            <div className="flex flex-col items-center gap-2">
+                              <Search className="w-8 h-8 text-muted-foreground/30" />
+                              <p>{isConnected ? "Waiting for events..." : "Connecting to live stream..."}</p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
                         filteredActivities.map((activity: Activity) => (
                           <motion.tr
-                            initial={{ opacity: 0, y: -5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
+                            initial={{ opacity: 0, backgroundColor: "rgba(59,130,246,0.05)" }}
+                            animate={{ opacity: 1, backgroundColor: "rgba(0,0,0,0)" }}
+                            transition={{ duration: 0.8 }}
                             key={activity.id}
                             className="group hover:bg-muted/30 transition-colors"
                           >
                             <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">
                               {new Date(activity.time).toLocaleTimeString()}
                             </TableCell>
-                            <TableCell className="font-medium text-sm">{activity.userId}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">{(activity as Activity & { userName?: string }).userName || activity.userId}</span>
+                                <span className="text-[10px] text-muted-foreground font-mono">{activity.userId}</span>
+                              </div>
+                            </TableCell>
                             <TableCell className="text-sm text-muted-foreground">{activity.action}</TableCell>
                             <TableCell>
                               <div className="flex flex-col">
@@ -165,8 +248,8 @@ export function LiveMonitoring() {
                             </TableCell>
                             <TableCell className="text-right">
                               <span className={`font-bold text-sm inline-flex items-center gap-1 ${
-                                activity.riskScore >= 80 ? 'text-destructive' :
-                                activity.riskScore >= 40 ? 'text-yellow-500' : 'text-green-500'
+                                activity.riskScore >= 80 ? "text-destructive" :
+                                activity.riskScore >= 40 ? "text-yellow-500" : "text-green-500"
                               }`}>
                                 {activity.riskScore >= 80 && <ShieldAlert className="w-3 h-3" />}
                                 {activity.riskScore}
@@ -177,22 +260,8 @@ export function LiveMonitoring() {
                                 {activity.status}
                               </Badge>
                             </TableCell>
-                            <TableCell>
-                              <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10">
-                                <UserMinus className="h-3.5 w-3.5" />
-                              </Button>
-                            </TableCell>
                           </motion.tr>
                         ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                            <div className="flex flex-col items-center gap-2">
-                              <Search className="w-8 h-8 text-muted-foreground/30" />
-                              <p>No activities matched your filters.</p>
-                            </div>
-                          </TableCell>
-                        </TableRow>
                       )}
                     </AnimatePresence>
                   </TableBody>
