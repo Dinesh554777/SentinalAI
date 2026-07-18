@@ -72,10 +72,24 @@ htmlcov/
 dump.rdb
 
 # ==========================
+# Frontend (unused)
+# ==========================
+frontend/src/mock/
+frontend/src/App.css
+frontend/src/assets/hero.png
+frontend/src/assets/react.svg
+frontend/src/assets/vite.svg
+
+# ==========================
 # Postman
 # ==========================
 .postman/
 postman/
+
+# ==========================
+# Misc files
+# ==========================
+integration_guide.md
 
 # ==========================
 # Jupyter
