@@ -83,7 +83,7 @@ class LogResponse(BaseModel):
     session_duration: int
     weekend_login: int
     risk: Optional[str]
-    risk_score: Optional[int]
+    risk_score: Optional[float]
     timestamp: datetime.datetime
 
     model_config = {"from_attributes": True}

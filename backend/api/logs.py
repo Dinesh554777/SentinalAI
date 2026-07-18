@@ -21,7 +21,7 @@ def store_log(
         raise HTTPException(status_code=404, detail="User not found")
 
     features = payload.model_dump()
-    risk, risk_score, reasons = prediction_service.predict_user_risk(features)
+    risk, risk_score, confidence, reasons, feature_importance = prediction_service.predict_user_risk(features)
 
     new_log = models.ActivityLog(
         user_id=payload.user_id,

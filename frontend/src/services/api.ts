@@ -139,25 +139,83 @@ export const alertsApi = {
 export const usersApi = {
   getUsers: async () => {
     const response = await apiClient.get('/users');
-    return response.data.map((u: { id: number; name: string; role: string }) => ({
-      id: String(u.id),
-      name: u.name,
-      email: `${u.name.toLowerCase().replace(' ', '')}@bank.com`,
-      role: u.role,
-      department: 'Banking',
-      location: 'HQ',
-      riskScore: Math.floor(Math.random() * 100),
-      status: 'Active' as const,
-      lastLogin: new Date().toISOString(),
-      avatar: '',
-      mfaEnabled: true,
-      recentDevices: ['Windows PC'],
-    }));
+    const users = response.data;
+    const results = [];
+    for (const u of users) {
+      try {
+        const logResp = await apiClient.get(`/logs/${u.id}`);
+        const logs = logResp.data;
+        let riskScore = 25;
+        if (logs && logs.length > 0) {
+          const latest = logs[0];
+          const pred = await predictionApi.predictRisk({
+            new_device: latest.new_device,
+            new_location: latest.new_location,
+            failed_logins: latest.failed_logins,
+            files_downloaded: latest.files_downloaded,
+            commands_executed: latest.commands_executed,
+            login_hour: latest.login_hour,
+            weekend: latest.weekend_login,
+            session_duration: latest.session_duration ?? 30,
+          });
+          riskScore = pred.risk_score;
+        }
+        results.push({
+          id: String(u.id),
+          name: u.name,
+          email: `${u.name.toLowerCase().replace(' ', '')}@bank.com`,
+          role: u.role,
+          department: 'Banking',
+          location: 'HQ',
+          riskScore,
+          status: 'Active' as const,
+          lastLogin: new Date().toISOString(),
+          avatar: '',
+          mfaEnabled: true,
+          recentDevices: ['Windows PC'],
+        });
+      } catch {
+        results.push({
+          id: String(u.id),
+          name: u.name,
+          email: `${u.name.toLowerCase().replace(' ', '')}@bank.com`,
+          role: u.role,
+          department: 'Banking',
+          location: 'HQ',
+          riskScore: 25,
+          status: 'Active' as const,
+          lastLogin: new Date().toISOString(),
+          avatar: '',
+          mfaEnabled: true,
+          recentDevices: ['Windows PC'],
+        });
+      }
+    }
+    return results;
   },
 
   getUserById: async (id: string) => {
     const response = await apiClient.get(`/users/${id}`);
     const u = response.data;
+    let riskScore = 25;
+    try {
+      const logResp = await apiClient.get(`/logs/${id}`);
+      const logs = logResp.data;
+      if (logs && logs.length > 0) {
+        const latest = logs[0];
+        const pred = await predictionApi.predictRisk({
+          new_device: latest.new_device,
+          new_location: latest.new_location,
+          failed_logins: latest.failed_logins,
+          files_downloaded: latest.files_downloaded,
+          commands_executed: latest.commands_executed,
+          login_hour: latest.login_hour,
+          weekend: latest.weekend_login,
+          session_duration: latest.session_duration ?? 30,
+        });
+        riskScore = pred.risk_score;
+      }
+    } catch {}
     return {
       id: String(u.id),
       name: u.name,
@@ -165,7 +223,7 @@ export const usersApi = {
       role: u.role,
       department: 'Banking',
       location: 'HQ',
-      riskScore: 50,
+      riskScore,
       status: 'Active' as const,
       lastLogin: u.last_login || new Date().toISOString(),
       avatar: '',

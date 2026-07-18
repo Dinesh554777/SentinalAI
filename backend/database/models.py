@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint, Index
+from sqlalchemy import Column, Integer, Float, String, DateTime, ForeignKey, UniqueConstraint, Index
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -57,7 +57,7 @@ class ActivityLog(Base):
     session_duration = Column(Integer, nullable=False)
     weekend_login = Column(Integer, nullable=False)
     risk = Column(String, nullable=True)
-    risk_score = Column(Integer, nullable=True)
+    risk_score = Column(Float, nullable=True)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
     user = relationship("User", back_populates="logs")
