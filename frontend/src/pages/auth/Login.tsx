@@ -4,15 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { LogIn } from "lucide-react";
+import { LogIn, Mail, Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/services/api";
+import { motion } from "framer-motion";
 
 export function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,59 +45,139 @@ export function Login() {
   };
 
   return (
-    <form onSubmit={handleLogin} className="space-y-6">
+    <form onSubmit={handleLogin} className="space-y-5">
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email Address</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="admin@bank.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="bg-background/50"
-          />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          className="space-y-2"
+        >
+          <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
+            <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+            Email Address
+          </Label>
+          <div className="relative group">
+            <Input
+              id="email"
+              type="email"
+              placeholder="admin@bank.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onFocus={() => setFocusedField("email")}
+              onBlur={() => setFocusedField(null)}
+              className={`h-11 bg-background/50 border-muted-foreground/20 transition-all duration-300 ${
+                focusedField === "email"
+                  ? "border-primary/50 input-glow"
+                  : "hover:border-muted-foreground/40"
+              }`}
+            />
+            {focusedField === "email" && (
+              <motion.div
+                layoutId="focus-indicator-email"
+                className="absolute -bottom-px left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-blue-400 rounded-full"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.2 }}
+              />
+            )}
           </div>
-          <Input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="bg-background/50"
-          />
-        </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-2"
+        >
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="text-sm font-medium flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+              Password
+            </Label>
+            <a href="#" className="text-xs text-primary hover:text-primary/80 transition-colors hover:underline">
+              Forgot password?
+            </a>
+          </div>
+          <div className="relative group">
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onFocus={() => setFocusedField("password")}
+              onBlur={() => setFocusedField(null)}
+              className={`h-11 bg-background/50 border-muted-foreground/20 transition-all duration-300 ${
+                focusedField === "password"
+                  ? "border-primary/50 input-glow"
+                  : "hover:border-muted-foreground/40"
+              }`}
+            />
+            {focusedField === "password" && (
+              <motion.div
+                layoutId="focus-indicator-password"
+                className="absolute -bottom-px left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-blue-400 rounded-full"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.2 }}
+              />
+            )}
+          </div>
+        </motion.div>
       </div>
 
-      <div className="flex items-center space-x-2">
-        <Checkbox id="remember" />
-        <Label htmlFor="remember" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="flex items-center space-x-2"
+      >
+        <Checkbox id="remember" className="border-muted-foreground/30" />
+        <Label htmlFor="remember" className="text-sm text-muted-foreground leading-none cursor-pointer select-none">
           Remember me for 30 days
         </Label>
-      </div>
+      </motion.div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? (
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-            Authenticating...
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <LogIn className="w-4 h-4" />
-            Login to Sentinel
-          </div>
-        )}
-      </Button>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Button
+          type="submit"
+          className="w-full h-11 font-semibold text-base relative overflow-hidden group bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-primary/40"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              Authenticating...
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <LogIn className="w-4 h-4" />
+              Login to Sentinel
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+        </Button>
+      </motion.div>
 
-      <p className="text-center text-sm text-muted-foreground">
-        Default: <span className="font-mono">admin@bank.com</span> / <span className="font-mono">admin123</span>
-      </p>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="text-center"
+      >
+        <p className="text-xs text-muted-foreground">
+          Default credentials:{" "}
+          <code className="font-mono bg-muted px-1.5 py-0.5 rounded text-primary">admin@bank.com</code>
+          {" / "}
+          <code className="font-mono bg-muted px-1.5 py-0.5 rounded text-primary">admin123</code>
+        </p>
+      </motion.div>
     </form>
   );
 }
