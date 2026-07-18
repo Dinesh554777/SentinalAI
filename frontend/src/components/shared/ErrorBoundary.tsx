@@ -32,24 +32,30 @@ export class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) return this.props.fallback;
 
       return (
-        <div className="flex items-center justify-center min-h-[400px] p-8">
-          <Card className="w-full max-w-md border-destructive/30">
-            <CardHeader className="text-center">
-              <div className="mx-auto p-3 bg-destructive/10 rounded-full w-fit mb-4">
-                <AlertTriangle className="w-8 h-8 text-destructive" />
+        <div className="flex items-center justify-center min-h-screen p-8 bg-background">
+          <Card className="w-full max-w-md border-destructive/20 shadow-xl shadow-destructive/5">
+            <CardHeader className="text-center pb-2">
+              <div className="relative mx-auto mb-4">
+                <div className="absolute inset-0 bg-destructive/20 rounded-full blur-xl" />
+                <div className="relative p-4 bg-gradient-to-br from-destructive/20 to-destructive/5 rounded-2xl ring-1 ring-destructive/20 mx-auto w-fit">
+                  <AlertTriangle className="w-10 h-10 text-destructive" />
+                </div>
               </div>
-              <CardTitle className="text-destructive">Something went wrong</CardTitle>
+              <CardTitle className="text-xl text-destructive">Something went wrong</CardTitle>
               <CardDescription className="text-sm">
                 An unexpected error occurred while rendering this page.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {this.state.error && (
-                <div className="p-3 rounded-lg bg-muted text-xs font-mono text-muted-foreground overflow-auto max-h-32">
+                <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/10 text-xs font-mono text-destructive/80 overflow-auto max-h-32">
                   {this.state.error.message}
                 </div>
               )}
-              <Button onClick={this.handleReset} className="w-full" variant="outline">
+              <Button
+                onClick={this.handleReset}
+                className="w-full h-10 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-md shadow-primary/20"
+              >
                 <RefreshCcw className="w-4 h-4 mr-2" />
                 Try Again
               </Button>

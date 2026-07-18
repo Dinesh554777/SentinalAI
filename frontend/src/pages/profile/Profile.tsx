@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShieldCheck, Mail, Briefcase, MapPin, Key, Bell, Lock, Activity, Shield, Clock, Fingerprint } from "lucide-react";
+import { ShieldCheck, Mail, Briefcase, MapPin, Key, Bell, Lock, Shield, Fingerprint } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function Profile() {

@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Settings as SettingsIcon, Bell, Shield, Palette, RefreshCw, Save, CheckCircle2 } from "lucide-react";
+import { Bell, Shield, Palette, Save, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function Settings() {

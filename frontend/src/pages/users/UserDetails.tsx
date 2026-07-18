@@ -133,7 +133,7 @@ export function UserDetails() {
                 { label: "Department", value: user.department },
                 { label: "Location", value: user.location },
                 { label: "Status", value: user.status, badge: true, badgeColor: user.status === 'Active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : '' },
-              ].map((item, idx) => (
+              ].map((item) => (
                 <div key={item.label} className="flex justify-between items-center py-2 px-1">
                   <span className="text-xs text-muted-foreground">{item.label}</span>
                   {item.badge ? (
@@ -219,12 +219,11 @@ export function UserDetails() {
                   </div>
                 ) : userAlerts?.length ? (
                   <div className="space-y-3">
-                    {userAlerts.map((alert: Alert, idx: number) => (
+                    {userAlerts.map((alert: Alert) => (
                       <motion.div
                         key={alert.id}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.08 }}
                         className="p-3 rounded-xl border bg-card/50 hover:bg-muted/30 transition-colors"
                       >
                         <div className="flex items-center justify-between mb-1">
