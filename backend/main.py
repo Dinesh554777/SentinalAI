@@ -9,7 +9,7 @@ from database import models
 from utils import security
 from services import prediction_service
 
-from api import auth, users, logs, predict, dashboard, alerts, reports
+from api import auth, users, logs, predict, dashboard, alerts, reports, otp
 
 
 def cleanup_expired_sessions():
@@ -137,6 +137,7 @@ app.include_router(predict.router)
 app.include_router(dashboard.router)
 app.include_router(alerts.router)
 app.include_router(reports.router)
+app.include_router(otp.router)
 
 
 @app.get("/feature-importance", tags=["System"])
