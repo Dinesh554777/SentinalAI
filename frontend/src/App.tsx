@@ -5,7 +5,6 @@ import { AuthLayout } from "./components/layout/AuthLayout";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { ErrorBoundary } from "./components/shared/ErrorBoundary";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const Login = lazy(() => import("./pages/auth/Login").then(m => ({ default: m.Login })));
 const OTP = lazy(() => import("./pages/auth/OTP").then(m => ({ default: m.OTP })));
@@ -22,11 +21,18 @@ const Settings = lazy(() => import("./pages/settings/Settings").then(m => ({ def
 
 function PageLoader() {
   return (
-    <div className="space-y-4 p-8">
-      <Skeleton className="h-8 w-64" />
-      <Skeleton className="h-4 w-96" />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-8">
-        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 w-full" />)}
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative">
+          <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-glow-pulse" />
+          <div className="relative h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-1 ring-primary/20 animate-pulse">
+            <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        </div>
+        <div className="space-y-2 text-center">
+          <p className="text-sm font-medium text-foreground">Loading SentinelAI</p>
+          <p className="text-xs text-muted-foreground">Initializing security modules...</p>
+        </div>
       </div>
     </div>
   );

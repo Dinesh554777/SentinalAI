@@ -151,7 +151,7 @@ export function Reports() {
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Security Reports</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-gradient">Security Reports</h2>
           <p className="text-muted-foreground">
             Comprehensive security analytics and compliance reports.
           </p>
