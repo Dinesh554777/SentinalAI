@@ -40,6 +40,26 @@ export const authApi = {
     return response.data;
   },
 
+  signup: async (name: string, email: string, password: string, role: string) => {
+    const response = await apiClient.post('/auth/signup', { name, email, password, role });
+    return response.data;
+  },
+
+  sendOtp: async (email: string, purpose: string = 'signup') => {
+    const response = await apiClient.post('/auth/send-otp', { email, purpose });
+    return response.data;
+  },
+
+  verifyOtp: async (email: string, otp: string, purpose: string = 'signup') => {
+    const response = await apiClient.post('/auth/verify-otp', { email, otp, purpose });
+    return response.data;
+  },
+
+  completeSignup: async (name: string, email: string, password: string, role: string) => {
+    const response = await apiClient.post('/auth/complete-signup', { name, email, password, role });
+    return response.data;
+  },
+
   logout: async () => {
     try {
       await apiClient.post('/auth/logout');

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -169,13 +169,19 @@ export function Login() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="text-center"
+        className="text-center space-y-3"
       >
         <p className="text-xs text-muted-foreground">
           Default credentials:{" "}
           <code className="font-mono bg-muted px-1.5 py-0.5 rounded text-primary">admin@bank.com</code>
           {" / "}
           <code className="font-mono bg-muted px-1.5 py-0.5 rounded text-primary">admin123</code>
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link to="/signup" className="font-medium text-primary hover:text-primary/80 transition-colors hover:underline">
+            Sign up
+          </Link>
         </p>
       </motion.div>
     </form>

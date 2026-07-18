@@ -7,6 +7,7 @@ import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { ErrorBoundary } from "./components/shared/ErrorBoundary";
 
 const Login = lazy(() => import("./pages/auth/Login").then(m => ({ default: m.Login })));
+const Signup = lazy(() => import("./pages/auth/Signup").then(m => ({ default: m.Signup })));
 const OTP = lazy(() => import("./pages/auth/OTP").then(m => ({ default: m.OTP })));
 const AccessDenied = lazy(() => import("./pages/auth/AccessDenied").then(m => ({ default: m.AccessDenied })));
 const Dashboard = lazy(() => import("./pages/dashboard/Dashboard").then(m => ({ default: m.Dashboard })));
@@ -48,6 +49,7 @@ function App() {
 
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/otp" element={<OTP />} />
               <Route path="/access-denied" element={<AccessDenied />} />
             </Route>
