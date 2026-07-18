@@ -29,8 +29,8 @@ def send_email(to_email: str, subject: str, html_body: str) -> bool:
         msg["To"] = to_email
         msg["Subject"] = subject
 
-        text_part = MIMEText(html_body, "plain")
-        msg.attach(text_part)
+        html_part = MIMEText(html_body, "html")
+        msg.attach(html_part)
 
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
             server.ehlo()
