@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/services/mockApi";
+import { predictionApi } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
@@ -7,6 +8,17 @@ import { motion } from "framer-motion";
 import { AIExplainabilityPanel } from "@/components/dashboard/AIExplainabilityPanel";
 import { AttackTimeline } from "@/components/shared/AttackTimeline";
 import { Activity, Radar as RadarIcon } from "lucide-react";
+
+const FEATURE_LABELS: Record<string, string> = {
+  files_downloaded: 'File Volume',
+  commands_executed: 'Commands',
+  failed_logins: 'Failed Logins',
+  new_location: 'Location',
+  new_device: 'Device',
+  session_duration: 'Session',
+  login_hour: 'Time',
+  weekend_login: 'Weekend',
+};
 
 export function RiskAnalysis() {
   const { data: analysis, isLoading: analysisLoading } = useQuery({
@@ -19,14 +31,27 @@ export function RiskAnalysis() {
     queryFn: api.getActivities
   });
 
-  const radarData = [
-    { subject: 'Location Anomaly', A: 85, fullMark: 100 },
-    { subject: 'Time Deviation', A: 90, fullMark: 100 },
-    { subject: 'Volume Spike', A: 95, fullMark: 100 },
-    { subject: 'Failed Logins', A: 60, fullMark: 100 },
-    { subject: 'Privilege Use', A: 75, fullMark: 100 },
-    { subject: 'Device Anomaly', A: 80, fullMark: 100 },
-  ];
+  const { data: featureImportance, isLoading: fiLoading } = useQuery({
+    queryKey: ['featureImportance'],
+    queryFn: predictionApi.getFeatureImportance,
+  });
+
+  const radarData = featureImportance
+    ? Object.entries(featureImportance)
+        .map(([key, value]) => ({
+          subject: FEATURE_LABELS[key] || key,
+          A: Math.round((value as number) * 500),
+          fullMark: 100,
+        }))
+        .sort((a, b) => b.A - a.A)
+    : [
+        { subject: 'File Volume', A: 21, fullMark: 100 },
+        { subject: 'Commands', A: 17, fullMark: 100 },
+        { subject: 'Failed Logins', A: 15, fullMark: 100 },
+        { subject: 'Location', A: 13, fullMark: 100 },
+        { subject: 'Device', A: 12, fullMark: 100 },
+        { subject: 'Session', A: 9, fullMark: 100 },
+      ];
 
   return (
     <motion.div
@@ -120,32 +145,36 @@ export function RiskAnalysis() {
                   <RadarIcon className="w-4 h-4 text-primary" />
                   Threat Vector Topology
                 </CardTitle>
-                <CardDescription>Multi-dimensional analysis of deviated behaviors</CardDescription>
+                <CardDescription>Model feature importance — weighted influence on risk classification</CardDescription>
               </CardHeader>
               <CardContent className="h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                    <PolarGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
-                    <Radar
-                      name="Risk Vector"
-                      dataKey="A"
-                      stroke="hsl(var(--destructive))"
-                      fill="hsl(var(--destructive))"
-                      fillOpacity={0.2}
-                      strokeWidth={2}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        borderColor: 'hsl(var(--border))',
-                        borderRadius: '12px',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                      }}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
+                {fiLoading ? (
+                  <Skeleton className="h-full w-full rounded-xl" />
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                      <PolarGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
+                      <PolarAngleAxis dataKey="subject" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                      <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+                      <Radar
+                        name="Feature Importance"
+                        dataKey="A"
+                        stroke="hsl(var(--destructive))"
+                        fill="hsl(var(--destructive))"
+                        fillOpacity={0.2}
+                        strokeWidth={2}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          borderColor: 'hsl(var(--border))',
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                        }}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                )}
               </CardContent>
             </Card>
           </motion.div>

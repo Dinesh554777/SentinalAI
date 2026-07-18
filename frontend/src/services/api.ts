@@ -252,8 +252,12 @@ export const predictionApi = {
     commands_executed: number;
     login_hour: number;
     weekend: number;
+    session_duration?: number;
   }) => {
-    const response = await apiClient.post('/predict-risk', data);
+    const response = await apiClient.post('/predict-risk', {
+      ...data,
+      session_duration: data.session_duration ?? 30,
+    });
     return response.data;
   },
 

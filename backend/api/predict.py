@@ -7,9 +7,11 @@ router = APIRouter(tags=["AI Prediction"])
 @router.post("/predict-risk", response_model=schemas.PredictResponse)
 def predict_risk(payload: schemas.PredictRequest):
     features = payload.model_dump()
-    risk, risk_score, reasons = prediction_service.predict_user_risk(features)
+    risk, risk_score, confidence, reasons, feature_importance = prediction_service.predict_user_risk(features)
     return {
         "risk": risk,
         "risk_score": risk_score,
-        "reasons": reasons
+        "confidence": round(confidence, 4),
+        "reasons": reasons,
+        "feature_importance": feature_importance,
     }

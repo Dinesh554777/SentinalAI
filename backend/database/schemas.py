@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional
+from typing import Dict, List, Optional
 import datetime
 
 
@@ -97,12 +97,15 @@ class PredictRequest(BaseModel):
     commands_executed: int = Field(..., ge=0)
     login_hour: int = Field(..., ge=0, le=23)
     weekend: int = Field(..., ge=0, le=1)
+    session_duration: int = Field(default=30, ge=0)
 
 
 class PredictResponse(BaseModel):
     risk: str
-    risk_score: int
+    risk_score: float
+    confidence: float
     reasons: List[str]
+    feature_importance: Dict[str, float]
 
 
 class DashboardResponse(BaseModel):
