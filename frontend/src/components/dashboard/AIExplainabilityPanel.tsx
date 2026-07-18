@@ -57,9 +57,9 @@ export function AIExplainabilityPanel({ analysis }: Props) {
             <span className="text-sm font-medium flex items-center gap-2">
               <Target className="w-4 h-4 text-primary" /> AI Confidence Level
             </span>
-            <span className="text-sm font-medium">{(analysis.confidence * 100).toFixed(1)}%</span>
+            <span className="text-sm font-medium">{analysis.confidence.toFixed(1)}%</span>
           </div>
-          <Progress value={analysis.confidence * 100} className="h-2" />
+          <Progress value={analysis.confidence} className="h-2" />
         </div>
 
         <div className="space-y-3">

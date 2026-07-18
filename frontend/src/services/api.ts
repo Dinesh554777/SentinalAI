@@ -224,9 +224,20 @@ export const reportsApi = {
     return response.data;
   },
 
-  downloadReport: () => {
+  downloadReport: async () => {
     const token = localStorage.getItem('sentinel_token');
-    window.open(`/api/reports/download?token=${token}`, '_blank');
+    const response = await axios.get('/api/reports/download', {
+      headers: { Authorization: `Bearer ${token}` },
+      responseType: 'blob',
+    });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'sentinal_report.csv');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
   },
 };
 

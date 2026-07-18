@@ -2,6 +2,7 @@ import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from sqlalchemy import text
 
 from database.database import engine, Base, SessionLocal
 from database import models
@@ -147,7 +148,7 @@ def get_feature_importance():
 def health():
     db = SessionLocal()
     try:
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db_status = "connected"
     except Exception:
         db_status = "disconnected"

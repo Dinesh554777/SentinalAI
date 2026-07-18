@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple
 # Path resolution
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BACKEND_DIR, "ml", "models", "risk_model.pkl")
-ENCODER_PATH = os.path.join(BACKEND_DIR, "ml", "models", "encoder.pkl")
+ENCODER_PATH = os.path.join(BACKEND_DIR, "ml", "encoder.pkl")
 
 # Load ML Model and Encoder globally on startup
 if not os.path.exists(MODEL_PATH) or not os.path.exists(ENCODER_PATH):
