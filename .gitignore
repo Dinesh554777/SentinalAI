@@ -33,6 +33,12 @@ build/
 .vite/
 
 # ==========================
+# TLS Certs (NEVER commit)
+# ==========================
+backend/certs/
+frontend/certs/
+
+# ==========================
 # IDE
 # ==========================
 .vscode/

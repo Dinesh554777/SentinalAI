@@ -130,7 +130,12 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://localhost:5173",
+        "https://127.0.0.1:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -168,4 +173,32 @@ def health():
         "database": "PostgreSQL",
         "db_status": db_status,
         "version": "2.0.0",
+        "tls": os.path.exists(os.path.join(os.path.dirname(__file__), "certs", "cert.pem")),
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    import ssl
+    import os
+
+    cert_dir = os.path.join(os.path.dirname(__file__), "certs")
+    cert_file = os.path.join(cert_dir, "cert.pem")
+    key_file = os.path.join(cert_dir, "key.pem")
+
+    ssl_ctx = None
+    if os.path.exists(cert_file) and os.path.exists(key_file):
+        ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_ctx.load_cert_chain(cert_file, key_file)
+        print("[HTTPS] TLS enabled — https://127.0.0.1:8443")
+    else:
+        print("[HTTP] No TLS certs found — http://127.0.0.1:8000")
+
+    uvicorn.run(
+        "main:app",
+        host="127.0.0.1",
+        port=8443 if ssl_ctx else 8000,
+        ssl_keyfile=key_file if ssl_ctx else None,
+        ssl_certfile=cert_file if ssl_ctx else None,
+        reload=True,
+    )
