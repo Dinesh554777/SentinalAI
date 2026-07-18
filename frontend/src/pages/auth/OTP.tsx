@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Clock, RefreshCw, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Clock, RefreshCw, ArrowLeft, CheckCircle2, Mail, Copy, Check, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { authApi } from "@/services/api";
@@ -33,6 +33,7 @@ export function OTP() {
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [copied, setCopied] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -77,6 +78,20 @@ export function OTP() {
       setOtp(newOtp);
       inputRefs.current[Math.min(pasted.length, 5)]?.focus();
     }
+  };
+
+  const handleCopyOtp = () => {
+    navigator.clipboard.writeText(otpDevHint);
+    setCopied(true);
+    toast.success("OTP copied to clipboard");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleAutoFill = () => {
+    const digits = otpDevHint.split("");
+    setOtp([...digits, ...Array(6 - digits.length).fill("")]);
+    inputRefs.current[Math.min(digits.length, 5)]?.focus();
+    toast.success("OTP auto-filled");
   };
 
   const handleVerify = async (e: React.FormEvent) => {
@@ -187,14 +202,78 @@ export function OTP() {
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mx-auto max-w-xs p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center"
+          className="mx-auto max-w-sm"
         >
-          <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium uppercase tracking-wider mb-0.5">
-            Development Mode
-          </p>
-          <p className="text-sm font-mono font-bold text-amber-700 dark:text-amber-300 tracking-[0.3em]">
-            {otpDevHint}
-          </p>
+          <div className="relative overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/5 via-background to-blue-500/5 shadow-lg shadow-primary/5">
+            {/* Top accent bar */}
+            <div className="h-0.5 bg-gradient-to-r from-primary via-blue-500 to-primary" />
+
+            <div className="p-4 space-y-3">
+              {/* Header */}
+              <div className="flex items-center gap-2.5">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/20 rounded-lg blur-md" />
+                  <div className="relative p-2 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl ring-1 ring-primary/15">
+                    <Bell className="w-4 h-4 text-primary" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground">OTP Sent Successfully</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{email}</p>
+                </div>
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-[10px] font-medium text-green-600 dark:text-green-400">Delivered</span>
+                </div>
+              </div>
+
+              {/* OTP Display */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  {otpDevHint.split("").map((digit, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.3 + i * 0.05, type: "spring", stiffness: 300 }}
+                      className="w-9 h-11 flex items-center justify-center rounded-lg bg-background/80 border border-muted-foreground/15 shadow-sm"
+                    >
+                      <span className="text-base font-bold font-mono text-primary tracking-wider">{digit}</span>
+                    </motion.div>
+                  ))}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleAutoFill}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/15 border border-primary/15 text-[10px] font-semibold text-primary transition-all duration-200 hover:shadow-sm hover:shadow-primary/10"
+                  >
+                    <Mail className="w-3 h-3" />
+                    Auto-fill
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyOtp}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted/50 hover:bg-muted border border-muted-foreground/10 text-[10px] font-medium text-muted-foreground transition-all duration-200"
+                  >
+                    {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                    {copied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-1 border-t border-muted-foreground/5">
+                <p className="text-[10px] text-muted-foreground">
+                  Code expires in <span className="font-mono font-semibold text-foreground">{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}</span>
+                </p>
+                <p className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-wider">
+                  Dev Mode
+                </p>
+              </div>
+            </div>
+          </div>
         </motion.div>
       )}
 
