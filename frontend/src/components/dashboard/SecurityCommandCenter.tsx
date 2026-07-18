@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, ShieldAlert, Cpu, Activity, Server, Laptop, ActivitySquare, TrendingUp, TrendingDown } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Cpu, Activity, Server, Laptop, ActivitySquare } from "lucide-react";
 import type { DashboardStats, RiskLevel } from "@/types";
 import { motion } from "framer-motion";
 

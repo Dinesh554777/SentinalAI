@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, RefreshCcw, Filter, UserMinus, ShieldAlert, Wifi, Clock } from "lucide-react";
+import { Search, RefreshCcw, UserMinus, ShieldAlert, Wifi } from "lucide-react";
 import type { Activity } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { LiveActivityFeed } from "@/components/shared/LiveActivityFeed";
