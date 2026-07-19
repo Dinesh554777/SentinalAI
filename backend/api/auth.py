@@ -1,10 +1,11 @@
 import uuid
 import datetime
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.orm import Session
 from database.database import get_db
 from database import models, schemas
 from utils import security
+from utils.rate_limiter import login_limiter, register_limiter
 from api.auth_deps import get_current_user
 from dotenv import load_dotenv
 import os
@@ -79,7 +80,10 @@ def _reset_failed_attempts(db: Session, user: models.User):
 
 
 @router.post("/login", response_model=schemas.TokenResponse)
-def login(payload: schemas.UserLogin, request: Request, db: Session = Depends(get_db)):
+def login(payload: schemas.UserLogin, request: Request, response: Response, db: Session = Depends(get_db)):
+    rl_headers = login_limiter.check(request, email=payload.username)
+    for k, v in rl_headers.items():
+        response.headers[k] = v
     user = db.query(models.User).filter(
         (models.User.email == payload.username)
         | (models.User.email == f"{payload.username}@bank.com")
@@ -127,7 +131,10 @@ def login(payload: schemas.UserLogin, request: Request, db: Session = Depends(ge
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-def register(payload: schemas.UserRegister, db: Session = Depends(get_db)):
+def register(payload: schemas.UserRegister, request: Request, response: Response, db: Session = Depends(get_db)):
+    rl_headers = register_limiter.check(request, email=payload.email)
+    for k, v in rl_headers.items():
+        response.headers[k] = v
     existing_email = db.query(models.User).filter(models.User.email == payload.email).first()
     if existing_email:
         raise HTTPException(

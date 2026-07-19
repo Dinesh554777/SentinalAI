@@ -1,11 +1,12 @@
 import random
 import string
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from database.database import get_db
 from database import models, schemas
 from utils.redis_client import store_otp, get_otp, delete_otp, OTP_TTL_SECONDS
+from utils.rate_limiter import otp_send_limiter, otp_verify_limiter, signup_limiter
 from utils import security
 from services.email_service import send_otp_email, is_configured as email_configured
 import datetime
@@ -47,7 +48,10 @@ def _create_notification(db: Session, title: str, message: str, notif_type: str 
 
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
-def signup(payload: SignupWithOTPRequest, db: Session = Depends(get_db)):
+def signup(payload: SignupWithOTPRequest, request: Request, response: Response, db: Session = Depends(get_db)):
+    rl_headers = signup_limiter.check(request, email=payload.email)
+    for k, v in rl_headers.items():
+        response.headers[k] = v
     existing_email = db.query(models.User).filter(models.User.email == payload.email).first()
     if existing_email:
         raise HTTPException(
@@ -82,7 +86,10 @@ def signup(payload: SignupWithOTPRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/send-otp")
-def send_otp(payload: SendOTPRequest, db: Session = Depends(get_db)):
+def send_otp(payload: SendOTPRequest, request: Request, response: Response, db: Session = Depends(get_db)):
+    rl_headers = otp_send_limiter.check(request, email=payload.email)
+    for k, v in rl_headers.items():
+        response.headers[k] = v
     if payload.purpose == "signup":
         existing = db.query(models.User).filter(models.User.email == payload.email).first()
         if existing:
@@ -117,7 +124,10 @@ def send_otp(payload: SendOTPRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/verify-otp")
-def verify_otp(payload: VerifyOTPRequest, db: Session = Depends(get_db)):
+def verify_otp(payload: VerifyOTPRequest, request: Request, response: Response, db: Session = Depends(get_db)):
+    rl_headers = otp_verify_limiter.check(request, email=payload.email)
+    for k, v in rl_headers.items():
+        response.headers[k] = v
     stored_otp = get_otp(payload.email)
 
     if stored_otp is None:
