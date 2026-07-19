@@ -35,7 +35,7 @@ export function Login() {
     } catch (err: unknown) {
       const error = err as { response?: { data?: { detail?: string }; status?: number } };
       if (error?.response?.status === 423) {
-        toast.error("Account is locked. Please try again later.");
+        toast.error(error?.response?.data?.detail || "Account is locked. Please try again later.");
       } else {
         toast.error(error?.response?.data?.detail || "Invalid username or password");
       }
