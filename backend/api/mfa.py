@@ -4,7 +4,6 @@ import uuid
 import pyotp
 import qrcode
 import io
-import base64
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database.database import get_db
@@ -58,7 +57,10 @@ def get_mfa_status(current_user: models.User = Depends(get_current_user)):
 
 
 @router.post("/mfa/setup", response_model=schemas.MfaSetupResponse)
-def setup_mfa(current_user: models.User = Depends(get_current_user)):
+def setup_mfa(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     secret = pyotp.random_base32()
     totp = pyotp.TOTP(secret)
     otpauth_url = totp.provisioning_uri(name=current_user.email, issuer_name=TOTP_ISSUER)
@@ -71,16 +73,7 @@ def setup_mfa(current_user: models.User = Depends(get_current_user)):
     img.save(buf, format="PNG")
 
     current_user.mfa_secret = secret
-    db = None
-    from database.database import SessionLocal
-    db = SessionLocal()
-    try:
-        db.query(models.User).filter(models.User.id == current_user.id).update(
-            {"mfa_secret": secret}
-        )
-        db.commit()
-    finally:
-        db.close()
+    db.commit()
 
     return schemas.MfaSetupResponse(
         secret=secret,
