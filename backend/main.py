@@ -129,14 +129,23 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "").split(",")
+    if origin.strip()
+] or [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://localhost:5173",
+    "https://127.0.0.1:5173",
+    "http://localhost",
+    "http://localhost:80",
+    "http://localhost:443",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://localhost:5173",
-        "https://127.0.0.1:5173",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -183,7 +192,10 @@ def health():
 if __name__ == "__main__":
     import uvicorn
     import ssl
-    import os
+
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8000"))
+    reload = os.getenv("RELOAD", "false").lower() == "true"
 
     cert_dir = os.path.join(os.path.dirname(__file__), "certs")
     cert_file = os.path.join(cert_dir, "cert.pem")
@@ -193,15 +205,16 @@ if __name__ == "__main__":
     if os.path.exists(cert_file) and os.path.exists(key_file):
         ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         ssl_ctx.load_cert_chain(cert_file, key_file)
-        print("[HTTPS] TLS enabled — https://127.0.0.1:8443")
+        port = int(os.getenv("PORT", "8443"))
+        print(f"[HTTPS] TLS enabled — https://{host}:{port}")
     else:
-        print("[HTTP] No TLS certs found — http://127.0.0.1:8000")
+        print(f"[HTTP] No TLS certs found — http://{host}:{port}")
 
     uvicorn.run(
         "main:app",
-        host="127.0.0.1",
-        port=8443 if ssl_ctx else 8000,
+        host=host,
+        port=port,
         ssl_keyfile=key_file if ssl_ctx else None,
         ssl_certfile=cert_file if ssl_ctx else None,
-        reload=True,
+        reload=reload,
     )

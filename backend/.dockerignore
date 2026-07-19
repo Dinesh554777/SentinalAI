@@ -1,0 +1,12 @@
+__pycache__
+*.pyc
+.env
+certs/
+*.db
+*.sqlite3
+.git
+.gitignore
+test_ai.py
+venv/
+.venv/
+.pytest_cache/
