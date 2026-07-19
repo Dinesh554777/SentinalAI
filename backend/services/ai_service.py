@@ -5,12 +5,13 @@ from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
 client = None
-if OPENAI_API_KEY and OPENAI_API_KEY != "your-openai-api-key-here":
-    client = OpenAI(api_key=OPENAI_API_KEY)
+if GROQ_API_KEY and GROQ_API_KEY != "your-groq-api-key-here":
+    client = OpenAI(api_key=GROQ_API_KEY, base_url=GROQ_BASE_URL)
 
 
 def is_configured() -> bool:
@@ -22,7 +23,7 @@ def _call_openai(system_prompt: str, user_prompt: str, max_tokens: int = 1024) -
         return ""
     try:
         response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=GROQ_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
@@ -32,7 +33,7 @@ def _call_openai(system_prompt: str, user_prompt: str, max_tokens: int = 1024) -
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"[AI Service] OpenAI error: {e}")
+        print(f"[AI Service] Groq error: {e}")
         return ""
 
 
@@ -179,7 +180,7 @@ Provide your security summary in JSON format."""
         pass
 
     return {
-        "executive_summary": response[:500] if response else "Summary generation requires OpenAI API key.",
+        "executive_summary": response[:500] if response else "Summary generation requires Groq API key.",
         "key_findings": [],
         "trends": [],
         "priority_actions": [],
@@ -292,7 +293,7 @@ def _fallback_log_analysis(logs: list) -> dict:
 
     return {
         "overall_assessment": f"Analyzed {len(logs)} logs. {high_count} high-risk, {med_count} medium-risk events detected.",
-        "patterns_detected": ["Behavioral pattern analysis requires OpenAI API key for detailed insights."],
+        "patterns_detected": ["Behavioral pattern analysis requires Groq API key for detailed insights."],
         "anomalies": [f"{high_count} high-risk events detected"] if high_count > 0 else [],
         "threat_level": threat_level,
         "recommended_investigation": [
@@ -315,7 +316,7 @@ def _fallback_summary(stats: dict, alerts: list) -> dict:
             f"{stats.get('medium_risk', 0)} medium-risk events in review period",
             f"{stats.get('active_sessions', 0)} active user sessions",
         ],
-        "trends": ["Detailed trend analysis requires OpenAI API key configuration."],
+        "trends": ["Detailed trend analysis requires Groq API key configuration."],
         "priority_actions": [
             "Investigate high-risk alerts" if high > 0 else "Continue standard monitoring",
             "Review user access patterns",

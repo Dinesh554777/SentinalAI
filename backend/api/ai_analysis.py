@@ -180,10 +180,10 @@ def ai_status():
     configured = ai_service.is_configured()
     return {
         "ai_enabled": configured,
-        "provider": "OpenAI" if configured else "None",
-        "model": ai_service.OPENAI_MODEL if configured else "N/A",
+        "provider": "Groq" if configured else "None",
+        "model": ai_service.GROQ_MODEL if configured else "N/A",
         "fallback_mode": not configured,
-        "message": "AI analysis active via OpenAI GPT-4o" if configured else "Set OPENAI_API_KEY in .env to enable AI analysis. Currently using rule-based fallback.",
+        "message": f"AI analysis active via Groq ({ai_service.GROQ_MODEL})" if configured else "Set GROQ_API_KEY in .env to enable AI analysis. Currently using rule-based fallback.",
     }
 
 
