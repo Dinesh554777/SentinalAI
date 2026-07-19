@@ -12,3 +12,4 @@ python-dotenv
 redis
 pyotp
 qrcode[pil]
+openai

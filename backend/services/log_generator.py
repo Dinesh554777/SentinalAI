@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from database.database import SessionLocal
 from database import models
 from services import prediction_service
+from services import ai_service
 
 DEVICES = ["Windows PC", "MacBook Pro", "Linux Server", "Android Phone", "iOS Tablet", "SSH Terminal"]
 LOCATIONS = ["HQ Office", "Remote VPN", "Data Center", "Branch Office", "Home Network", "Cloud AWS"]
@@ -73,7 +74,7 @@ def generate_log_entry(db: Session):
         "weekend": 1 if now.weekday() >= 5 else 0,
     }
 
-    risk, risk_score, reasons = prediction_service.predict_user_risk(features)
+    risk, risk_score, confidence, reasons, importances = prediction_service.predict_user_risk(features)
 
     status = "Success"
     if risk == "High" and random.random() < 0.4:
@@ -104,18 +105,38 @@ def generate_log_entry(db: Session):
         )
         db.add(alert)
 
+        if ai_service.is_configured():
+            notification_message = ai_service.generate_notification_message(
+                user_name=selected_user.name,
+                risk=risk,
+                risk_score=risk_score,
+                features=features,
+            )
+        else:
+            notification_message = f"{selected_user.name} triggered a high-risk event (score: {risk_score}). Device: {random.choice(DEVICES)}, IP: {random.choice(IPS)}. Immediate review recommended."
+
         notif = models.Notification(
             user_id=selected_user.id,
             title=f"High Risk Alert — {action_cfg['action']}",
-            message=f"{selected_user.name} triggered a high-risk event (score: {risk_score}). Device: {random.choice(DEVICES)}, IP: {random.choice(IPS)}. Immediate review recommended.",
+            message=notification_message,
             type="alert",
         )
         db.add(notif)
     elif risk == "Medium":
+        if ai_service.is_configured():
+            notification_message = ai_service.generate_notification_message(
+                user_name=selected_user.name,
+                risk=risk,
+                risk_score=risk_score,
+                features=features,
+            )
+        else:
+            notification_message = f"{selected_user.name} triggered a medium-risk event (score: {risk_score})."
+
         notif = models.Notification(
             user_id=selected_user.id,
             title=f"Medium Risk — {action_cfg['action']}",
-            message=f"{selected_user.name} triggered a medium-risk event (score: {risk_score}).",
+            message=notification_message,
             type="warning",
         )
         db.add(notif)

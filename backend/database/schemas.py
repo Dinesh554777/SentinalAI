@@ -108,6 +108,46 @@ class PredictResponse(BaseModel):
     confidence: float
     reasons: List[str]
     feature_importance: Dict[str, float]
+    ai_narrative: Optional[str] = None
+    ai_enabled: Optional[bool] = None
+
+
+class ThreatAnalysisResponse(BaseModel):
+    risk: str
+    risk_score: float
+    confidence: float
+    reasons: List[str]
+    feature_importance: Dict[str, float]
+    ai_analysis: Dict
+    ai_enabled: bool
+
+
+class LogAnalysisResponse(BaseModel):
+    logs_analyzed: int
+    analysis: Dict
+    ai_enabled: bool
+
+
+class SecuritySummaryResponse(BaseModel):
+    dashboard_stats: Dict
+    ai_summary: Dict
+    ai_enabled: bool
+
+
+class AlertNarrativeResponse(BaseModel):
+    log_id: int
+    user_name: str
+    risk: str
+    narrative: str
+    ai_enabled: bool
+
+
+class AIStatusResponse(BaseModel):
+    ai_enabled: bool
+    provider: str
+    model: str
+    fallback_mode: bool
+    message: str
 
 
 class DashboardResponse(BaseModel):
