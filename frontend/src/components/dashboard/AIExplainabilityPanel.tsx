@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { BrainCircuit, Target, ShieldAlert, CheckCircle2, ChevronRight, Activity } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import type { RiskAnalysis } from "@/types";
 import { motion } from "framer-motion";
 
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function AIExplainabilityPanel({ analysis }: Props) {
+  const { toast } = useToast();
   const getPredictionColor = (pred: string) => {
     switch (pred) {
       case 'High': return 'text-destructive';
@@ -95,10 +97,19 @@ export function AIExplainabilityPanel({ analysis }: Props) {
           <div className={`p-4 rounded-lg border ${getPredictionBg(analysis.prediction)}`}>
             <p className="text-sm font-medium leading-relaxed mb-4">{analysis.recommendedAction}</p>
             <div className="flex gap-2">
-              <Button size="sm" className="w-full">
+              <Button
+                size="sm"
+                className="w-full"
+                onClick={() => toast({ title: "Playbook Executed", description: `Automated response playbook for ${analysis.userId} has been triggered.` })}
+              >
                 <CheckCircle2 className="w-4 h-4 mr-2" /> Execute Playbook
               </Button>
-              <Button size="sm" variant="outline" className="w-full">
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full"
+                onClick={() => toast({ title: "Manual Review", description: `Case for ${analysis.userId} opened for manual analyst review.` })}
+              >
                 Manual Review <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             </div>

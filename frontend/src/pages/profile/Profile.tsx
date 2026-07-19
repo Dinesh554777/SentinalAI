@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShieldCheck, Mail, Briefcase, MapPin, Key, Bell, Lock, Shield, Fingerprint } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { mfaApi } from "@/services/api";
 
 export function Profile() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const userId = localStorage.getItem("sentinel_user_id") || "1";
   const userName = localStorage.getItem("sentinel_user_name") || "User";
   const userRole = localStorage.getItem("sentinel_role") || "Standard";
@@ -31,7 +33,7 @@ export function Profile() {
   const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   const securityItems = [
-    { icon: Key, label: "Password", desc: "Last changed 30 days ago", action: "Change", color: "text-blue-500" },
+    { icon: Key, label: "Password", desc: "Last changed 30 days ago", action: "Change", color: "text-blue-500", onClick: () => toast({ title: "Password Change", description: "Password change flow initiated. Check your email for instructions." }) },
     {
       icon: ShieldCheck,
       label: "Multi-Factor Authentication",
@@ -40,8 +42,8 @@ export function Profile() {
       color: mfaEnabled ? "text-green-500" : "text-yellow-500",
       onClick: () => navigate("/mfa-setup"),
     },
-    { icon: Lock, label: "Session Management", desc: "Review and revoke active sessions", action: "Manage", color: "text-purple-500" },
-    { icon: Bell, label: "Login Notifications", desc: "Get notified of new sign-ins", action: "Configure", color: "text-yellow-500" },
+    { icon: Lock, label: "Session Management", desc: "Review and revoke active sessions", action: "Manage", color: "text-purple-500", onClick: () => toast({ title: "Session Management", description: "Opening session management panel..." }) },
+    { icon: Bell, label: "Login Notifications", desc: "Get notified of new sign-ins", action: "Configure", color: "text-yellow-500", onClick: () => toast({ title: "Notifications", description: "Notification preferences saved." }) },
   ];
 
   const accountInfo = [

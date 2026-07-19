@@ -1,17 +1,21 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/services/mockApi";
+import { alertsApi } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AlertTriangle, ShieldCheck, Eye, EyeOff, Bot, Server, UserCog, Crosshair, Clock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import type { Alert } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function Alerts() {
   const [filter, setFilter] = useState("All");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: alerts, isLoading } = useQuery({
     queryKey: ['alerts'],
@@ -184,21 +188,49 @@ export function Alerts() {
                       </div>
                     </CardContent>
                     <CardFooter className="flex flex-wrap gap-2 pt-3 border-t mt-2">
-                      <Button variant="default" size="sm" className="h-8 text-xs bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-md shadow-primary/20">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="h-8 text-xs bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-md shadow-primary/20"
+                        onClick={async () => {
+                          try {
+                            await alertsApi.acknowledgeAlert(alert.id);
+                            toast({ title: "Alert Resolved", description: `Alert ${alert.id} has been resolved.` });
+                            queryClient.invalidateQueries({ queryKey: ["alerts"] });
+                          } catch {
+                            toast({ title: "Error", description: "Failed to resolve alert.", variant: "destructive" });
+                          }
+                        }}
+                      >
                         <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
                         Resolve
                       </Button>
-                      <Button variant="outline" size="sm" className="h-8 text-xs border-muted-foreground/15">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs border-muted-foreground/15"
+                        onClick={() => toast({ title: "Investigating", description: `Opening investigation for alert ${alert.id}.` })}
+                      >
                         <Eye className="h-3.5 w-3.5 mr-1.5" />
                         Investigate
                       </Button>
                       {!alert.assignedAnalyst && (
-                        <Button variant="outline" size="sm" className="h-8 text-xs border-muted-foreground/15">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs border-muted-foreground/15"
+                          onClick={() => toast({ title: "Assigned", description: `Alert ${alert.id} assigned to current analyst.` })}
+                        >
                           <UserCog className="h-3.5 w-3.5 mr-1.5" />
                           Assign
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm" className="ml-auto h-8 text-xs text-muted-foreground">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-auto h-8 text-xs text-muted-foreground"
+                        onClick={() => toast({ title: "Ignored", description: `Alert ${alert.id} has been marked as ignored.` })}
+                      >
                         <EyeOff className="h-3.5 w-3.5 mr-1.5" />
                         Ignore
                       </Button>

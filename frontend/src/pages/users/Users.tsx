@@ -11,11 +11,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Search, MoreHorizontal, ShieldAlert, Eye, Users as UsersIcon, UserCheck, UserX } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import type { User } from "@/types";
 import { motion } from "framer-motion";
 
 export function Users() {
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['users'],
@@ -227,8 +229,18 @@ export function Users() {
                                 <Eye className="mr-2 h-4 w-4" /> View Profile
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer">Edit Access</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive cursor-pointer">Suspend Account</DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="cursor-pointer"
+                              onClick={() => toast({ title: "Edit Access", description: `Editing access for ${user.name}.` })}
+                            >
+                              Edit Access
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive cursor-pointer"
+                              onClick={() => toast({ title: "Account Suspended", description: `${user.name}'s account has been suspended.`, variant: "destructive" })}
+                            >
+                              Suspend Account
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
