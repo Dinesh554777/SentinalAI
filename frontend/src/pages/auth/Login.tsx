@@ -26,6 +26,10 @@ export function Login() {
     setIsLoading(true);
     try {
       const data = await authApi.login(email, password);
+      if (data.mfa_required) {
+        navigate("/mfa-verify", { state: { tempToken: data.temp_token } });
+        return;
+      }
       localStorage.setItem("sentinel_token", data.access_token);
       localStorage.setItem("sentinel_role", data.role);
       localStorage.setItem("sentinel_user_id", String(data.user_id));

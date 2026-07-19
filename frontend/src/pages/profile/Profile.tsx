@@ -7,8 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShieldCheck, Mail, Briefcase, MapPin, Key, Bell, Lock, Shield, Fingerprint } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { mfaApi } from "@/services/api";
 
 export function Profile() {
+  const navigate = useNavigate();
   const userId = localStorage.getItem("sentinel_user_id") || "1";
   const userName = localStorage.getItem("sentinel_user_name") || "User";
   const userRole = localStorage.getItem("sentinel_role") || "Standard";
@@ -18,11 +21,25 @@ export function Profile() {
     queryFn: () => api.getUser(userId)
   });
 
+  const { data: mfaStatus } = useQuery({
+    queryKey: ['mfaStatus'],
+    queryFn: () => mfaApi.getStatus(),
+  });
+
+  const mfaEnabled = mfaStatus?.mfa_enabled ?? false;
+
   const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   const securityItems = [
     { icon: Key, label: "Password", desc: "Last changed 30 days ago", action: "Change", color: "text-blue-500" },
-    { icon: ShieldCheck, label: "Multi-Factor Authentication", desc: "Enabled via Authenticator App", action: "Configure", color: "text-green-500" },
+    {
+      icon: ShieldCheck,
+      label: "Multi-Factor Authentication",
+      desc: mfaEnabled ? "Enabled via Authenticator App" : "Not configured",
+      action: mfaEnabled ? "Configure" : "Enable",
+      color: mfaEnabled ? "text-green-500" : "text-yellow-500",
+      onClick: () => navigate("/mfa-setup"),
+    },
     { icon: Lock, label: "Session Management", desc: "Review and revoke active sessions", action: "Manage", color: "text-purple-500" },
     { icon: Bell, label: "Login Notifications", desc: "Get notified of new sign-ins", action: "Configure", color: "text-yellow-500" },
   ];
@@ -31,7 +48,7 @@ export function Profile() {
     { label: "User ID", value: userId, mono: true },
     { label: "Role", value: userRole },
     { label: "Status", value: "Active", badge: true, badgeColor: "bg-green-500/10 text-green-500 border-green-500/20" },
-    { label: "MFA", value: "Enabled", badge: true, badgeColor: "bg-green-500/10 text-green-500 border-green-500/20" },
+    { label: "MFA", value: mfaEnabled ? "Enabled" : "Disabled", badge: true, badgeColor: mfaEnabled ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-destructive/10 text-destructive border-destructive/20" },
   ];
 
   return (
@@ -172,7 +189,12 @@ export function Profile() {
                         <p className="text-xs text-muted-foreground">{item.desc}</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="h-8 text-xs border-muted-foreground/15 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs border-muted-foreground/15 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={item.onClick}
+                    >
                       {item.action}
                     </Button>
                   </motion.div>

@@ -11,6 +11,8 @@ const Login = lazy(() => import("./pages/auth/Login").then(m => ({ default: m.Lo
 const Signup = lazy(() => import("./pages/auth/Signup").then(m => ({ default: m.Signup })));
 const OTP = lazy(() => import("./pages/auth/OTP").then(m => ({ default: m.OTP })));
 const AccessDenied = lazy(() => import("./pages/auth/AccessDenied").then(m => ({ default: m.AccessDenied })));
+const MFASetup = lazy(() => import("./pages/auth/MFASetup").then(m => ({ default: m.MFASetup })));
+const MFAVerify = lazy(() => import("./pages/auth/MFAVerify").then(m => ({ default: m.MFAVerify })));
 const Dashboard = lazy(() => import("./pages/dashboard/Dashboard").then(m => ({ default: m.Dashboard })));
 const LiveMonitoring = lazy(() => import("./pages/live-monitoring/LiveMonitoring").then(m => ({ default: m.LiveMonitoring })));
 const RiskAnalysis = lazy(() => import("./pages/risk-analysis/RiskAnalysis").then(m => ({ default: m.RiskAnalysis })));
@@ -53,6 +55,7 @@ function App() {
               <Route path="/signup" element={<Signup />} />
               <Route path="/otp" element={<OTP />} />
               <Route path="/access-denied" element={<AccessDenied />} />
+              <Route path="/mfa-verify" element={<MFAVerify />} />
             </Route>
 
             <Route element={<ProtectedRoute />}>
@@ -66,6 +69,7 @@ function App() {
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/mfa-setup" element={<MFASetup />} />
               </Route>
             </Route>
 
