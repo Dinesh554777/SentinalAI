@@ -28,6 +28,7 @@ class UserResponse(BaseModel):
     id: int
     name: str
     role: str
+    mfa_enabled: int = 0
 
     model_config = {"from_attributes": True}
 
@@ -38,6 +39,7 @@ class UserDetailsResponse(BaseModel):
     email: str
     role: str
     is_active: int
+    mfa_enabled: int = 0
     last_login: Optional[datetime.datetime] = None
     created_at: Optional[datetime.datetime] = None
 
@@ -125,3 +127,33 @@ class AlertResponse(BaseModel):
     status: str
 
     model_config = {"from_attributes": True}
+
+
+class MfaSetupResponse(BaseModel):
+    secret: str
+    otpauth_url: str
+
+
+class MfaEnableRequest(BaseModel):
+    code: str = Field(..., min_length=6, max_length=6)
+
+
+class MfaVerifyRequest(BaseModel):
+    code: str = Field(..., min_length=6, max_length=6)
+    temp_token: str
+
+
+class MfaStatusResponse(BaseModel):
+    mfa_enabled: bool
+    is_enforced: bool
+
+
+class MfaLoginResponse(BaseModel):
+    mfa_required: bool
+    temp_token: Optional[str] = None
+    access_token: Optional[str] = None
+    token_type: str = "bearer"
+    role: Optional[str] = None
+    user_id: Optional[int] = None
+    name: Optional[str] = None
+    expires_in: Optional[int] = None

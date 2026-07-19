@@ -17,6 +17,8 @@ class User(Base):
     last_login = Column(DateTime, nullable=True)
     failed_login_attempts = Column(Integer, default=0)
     locked_until = Column(DateTime, nullable=True)
+    mfa_enabled = Column(Integer, default=0)
+    mfa_secret = Column(String, nullable=True)
 
     logs = relationship("ActivityLog", back_populates="user", cascade="all, delete-orphan")
     alerts = relationship("Alert", back_populates="user", cascade="all, delete-orphan")

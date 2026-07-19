@@ -11,7 +11,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 @router.get("", response_model=List[schemas.UserResponse])
 def get_users(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     users = db.query(models.User).all()
-    return [{"id": u.id, "name": u.name, "role": u.role} for u in users]
+    return [{"id": u.id, "name": u.name, "role": u.role, "mfa_enabled": u.mfa_enabled} for u in users]
 
 
 @router.get("/{id}", response_model=schemas.UserDetailsResponse)

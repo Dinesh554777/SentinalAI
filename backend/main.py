@@ -12,7 +12,7 @@ from utils import security
 from services import prediction_service
 from services.log_generator import background_log_generator
 
-from api import auth, users, logs, predict, dashboard, alerts, reports, otp, notifications
+from api import auth, users, logs, predict, dashboard, alerts, reports, otp, notifications, mfa
 
 
 def cleanup_expired_sessions():
@@ -151,6 +151,7 @@ app.include_router(alerts.router)
 app.include_router(reports.router)
 app.include_router(otp.router)
 app.include_router(notifications.router)
+app.include_router(mfa.router)
 
 
 @app.get("/feature-importance", tags=["System"])

@@ -1,5 +1,6 @@
 import uuid
 import datetime
+import os
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.orm import Session
 from database.database import get_db
@@ -8,7 +9,6 @@ from utils import security
 from utils.rate_limiter import login_limiter, register_limiter
 from api.auth_deps import get_current_user
 from dotenv import load_dotenv
-import os
 
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
 
@@ -113,6 +113,20 @@ def login(payload: schemas.UserLogin, request: Request, response: Response, db: 
         )
 
     _reset_failed_attempts(db, user)
+
+    if user.mfa_enabled:
+        from api.mfa import _create_temp_token
+        temp_token = _create_temp_token(user)
+        return {
+            "mfa_required": True,
+            "temp_token": temp_token,
+            "access_token": None,
+            "token_type": "bearer",
+            "role": user.role,
+            "user_id": user.id,
+            "name": user.name,
+            "expires_in": 0,
+        }
 
     jti, expires = _create_session(db, user, request)
 

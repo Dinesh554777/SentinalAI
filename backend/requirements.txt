@@ -10,3 +10,5 @@ passlib[bcrypt]
 psycopg2-binary
 python-dotenv
 redis
+pyotp
+qrcode[pil]

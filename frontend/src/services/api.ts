@@ -171,7 +171,7 @@ export const usersApi = {
           status: 'Active' as const,
           lastLogin: new Date().toISOString(),
           avatar: '',
-          mfaEnabled: true,
+          mfaEnabled: Boolean(u.mfa_enabled),
           recentDevices: ['Windows PC'],
         });
       } catch {
@@ -186,7 +186,7 @@ export const usersApi = {
           status: 'Active' as const,
           lastLogin: new Date().toISOString(),
           avatar: '',
-          mfaEnabled: true,
+          mfaEnabled: Boolean(u.mfa_enabled),
           recentDevices: ['Windows PC'],
         });
       }
@@ -227,7 +227,7 @@ export const usersApi = {
       status: 'Active' as const,
       lastLogin: u.last_login || new Date().toISOString(),
       avatar: '',
-      mfaEnabled: true,
+      mfaEnabled: Boolean(u.mfa_enabled),
       recentDevices: ['Windows PC'],
     };
   },
@@ -373,6 +373,33 @@ export const notificationsApi = {
 
   deleteNotification: async (id: number) => {
     const response = await apiClient.delete(`/notifications/${id}`);
+    return response.data;
+  },
+};
+
+export const mfaApi = {
+  getStatus: async () => {
+    const response = await apiClient.get('/auth/mfa/status');
+    return response.data as { mfa_enabled: boolean; is_enforced: boolean };
+  },
+
+  setup: async () => {
+    const response = await apiClient.post('/auth/mfa/setup');
+    return response.data as { secret: string; otpauth_url: string };
+  },
+
+  enable: async (code: string) => {
+    const response = await apiClient.post('/auth/mfa/enable', { code });
+    return response.data;
+  },
+
+  disable: async (code: string) => {
+    const response = await apiClient.post('/auth/mfa/disable', { code });
+    return response.data;
+  },
+
+  verifyLogin: async (code: string, tempToken: string) => {
+    const response = await apiClient.post('/auth/mfa/verify-login', { code, temp_token: tempToken });
     return response.data;
   },
 };
