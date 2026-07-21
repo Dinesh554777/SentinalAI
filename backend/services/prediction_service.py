@@ -8,13 +8,30 @@ BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BACKEND_DIR, "ml", "models", "risk_model.pkl")
 ENCODER_PATH = os.path.join(BACKEND_DIR, "ml", "models", "encoder.pkl")
 
-if not os.path.exists(MODEL_PATH) or not os.path.exists(ENCODER_PATH):
-    raise FileNotFoundError(
-        f"Model files not found. Ensure they exist at {BACKEND_DIR}/ml/models/"
-    )
+# Lazy load models — don't fail on import
+_model = None
+_encoder = None
 
-model = joblib.load(MODEL_PATH)
-encoder = joblib.load(ENCODER_PATH)
+def _load_models():
+    global _model, _encoder
+    if _model is None or _encoder is None:
+        if not os.path.exists(MODEL_PATH) or not os.path.exists(ENCODER_PATH):
+            raise FileNotFoundError(
+                f"Model files not found. Ensure they exist at {BACKEND_DIR}/ml/models/"
+            )
+        _model = joblib.load(MODEL_PATH)
+        _encoder = joblib.load(ENCODER_PATH)
+    return _model, _encoder
+
+@property
+def model():
+    m, _ = _load_models()
+    return m
+
+@property
+def encoder():
+    _, e = _load_models()
+    return e
 
 FEATURE_DESCRIPTIONS = {
     "new_device": "Login from an unrecognized device",
@@ -29,8 +46,9 @@ FEATURE_DESCRIPTIONS = {
 
 
 def get_feature_importances() -> Dict[str, float]:
-    importances = model.feature_importances_
-    features = list(model.feature_names_in_)
+    m, _ = _load_models()
+    importances = m.feature_importances_
+    features = list(m.feature_names_in_)
     result = {}
     for f, imp in zip(features, importances):
         key = "weekend" if f == "weekend_login" else f
@@ -71,22 +89,23 @@ def _compute_reasons(features: dict, importances: Dict[str, float]) -> List[str]
 
 
 def predict_user_risk(data: dict) -> Tuple[str, float, float, List[str], Dict[str, float]]:
+    m, e = _load_models()
     model_data = data.copy()
     if "weekend" in model_data:
         model_data["weekend_login"] = model_data.pop("weekend")
 
-    for col in model.feature_names_in_:
+    for col in m.feature_names_in_:
         if col not in model_data:
             model_data[col] = 0
 
     df = pd.DataFrame([model_data])
-    df = df[model.feature_names_in_]
+    df = df[m.feature_names_in_]
 
-    prediction = model.predict(df)
-    risk = encoder.inverse_transform(prediction)[0]
+    prediction = m.predict(df)
+    risk = e.inverse_transform(prediction)[0]
 
-    probabilities = model.predict_proba(df)[0]
-    class_labels = encoder.classes_
+    probabilities = m.predict_proba(df)[0]
+    class_labels = e.classes_
     prob_dict = {cls: float(probabilities[i]) for i, cls in enumerate(class_labels)}
 
     confidence = prob_dict.get(risk, 0.0)
@@ -101,3 +120,4 @@ def predict_user_risk(data: dict) -> Tuple[str, float, float, List[str], Dict[st
     reasons = _compute_reasons(model_data, importances)
 
     return risk, risk_score, confidence, reasons, importances
+
