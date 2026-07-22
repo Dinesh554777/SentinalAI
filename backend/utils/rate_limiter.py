@@ -1,7 +1,7 @@
 import time
 from functools import wraps
 from fastapi import Request, HTTPException, status
-from utils.redis_client import redis_client
+from utils.redis_client import redis_client, REDIS_AVAILABLE
 
 
 class RateLimiter:
@@ -23,6 +23,13 @@ class RateLimiter:
         return ip
 
     def check(self, request: Request, email: str = None):
+        if not REDIS_AVAILABLE or redis_client is None:
+            return {
+                "X-RateLimit-Limit": str(self.max_requests),
+                "X-RateLimit-Remaining": str(self.max_requests),
+                "X-RateLimit-Reset": str(int(time.time()) + self.window_seconds),
+            }
+
         client_id = self._get_client_id(request, email)
         key = self._get_key(client_id)
         now = time.time()
